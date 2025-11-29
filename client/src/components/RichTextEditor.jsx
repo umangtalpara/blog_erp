@@ -224,7 +224,14 @@ const RichTextEditor = ({ content, onChange }) => {
     }, [content, editor]);
 
     return (
-        <div className="border border-gray-200 rounded-xl shadow-sm bg-white overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all duration-200">
+        <div
+            className="border border-gray-200 rounded-xl shadow-sm bg-white overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all duration-200"
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    e.stopPropagation();
+                }
+            }}
+        >
             <MenuBar editor={editor} />
             <EditorContent editor={editor} />
         </div>
