@@ -32,10 +32,27 @@ const getLogs = async () => {
   return data.Items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 };
 
+const getComments = async (postId) => {
+  const logs = await getLogs();
+  return logs.filter(l => l.type === 'comment' && l.postId === postId);
+};
+
+const getPostStats = async (postId) => {
+  const logs = await getLogs();
+  const postLogs = logs.filter(l => l.postId === postId);
+  
+  return {
+    views: postLogs.filter(l => l.type === 'view').length,
+    shares: postLogs.filter(l => l.type === 'share').length,
+    comments: postLogs.filter(l => l.type === 'comment').length
+  };
+};
+
 const getStats = async () => {
   const logs = await getLogs();
   
   const stats = {
+    totalViews: logs.filter(l => l.type === 'view').length,
     totalShares: logs.filter(l => l.type === 'share').length,
     totalComments: logs.filter(l => l.type === 'comment').length,
     recentActivity: logs.slice(0, 10)
@@ -44,4 +61,4 @@ const getStats = async () => {
   return stats;
 };
 
-module.exports = { logEvent, getLogs, getStats };
+module.exports = { logEvent, getLogs, getStats, getComments, getPostStats };

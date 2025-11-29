@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import RichTextEditor from '../components/RichTextEditor';
+import CommentSection from '../components/CommentSection';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare } from 'lucide-react';
+import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye } from 'lucide-react';
 
 const Dashboard = () => {
     const [posts, setPosts] = useState([]);
@@ -164,6 +165,23 @@ const Dashboard = () => {
         localStorage.removeItem('apiKey');
         localStorage.removeItem('username');
         navigate('/');
+    };
+
+    const handlePreviewClick = async () => {
+        setShowPreview(true);
+        // Track view event
+        try {
+            await axios.post('http://localhost:5000/analytics/track', {
+                type: 'view',
+                data: {
+                    postId: editingPostId || 'preview-post',
+                    platform: 'web'
+                }
+            });
+            fetchAnalytics(); // Refresh stats
+        } catch (error) {
+            console.error('Error tracking view:', error);
+        }
     };
 
     const SidebarItem = ({ view, icon: Icon, label }) => (
@@ -336,7 +354,16 @@ const Dashboard = () => {
                                 </div>
 
                                 {/* Stats Cards */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="card p-6 flex items-center gap-4">
+                                        <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
+                                            <Eye size={24} />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Total Views</p>
+                                            <p className="text-2xl font-bold text-gray-900">{analyticsStats.totalViews || 0}</p>
+                                        </div>
+                                    </div>
                                     <div className="card p-6 flex items-center gap-4">
                                         <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
                                             <Share2 size={24} />
@@ -367,12 +394,19 @@ const Dashboard = () => {
                                             analyticsStats.recentActivity.map((log) => (
                                                 <div key={log.eventId} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`p-2 rounded-lg ${log.type === 'share' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'}`}>
-                                                            {log.type === 'share' ? <Share2 size={18} /> : <MessageSquare size={18} />}
+                                                        <div className={`p-2 rounded-lg ${log.type === 'share' ? 'bg-blue-50 text-blue-600' :
+                                                            log.type === 'comment' ? 'bg-green-50 text-green-600' :
+                                                                'bg-purple-50 text-purple-600'
+                                                            }`}>
+                                                            {log.type === 'share' ? <Share2 size={18} /> :
+                                                                log.type === 'comment' ? <MessageSquare size={18} /> :
+                                                                    <Eye size={18} />}
                                                         </div>
                                                         <div>
                                                             <p className="font-medium text-gray-900">
-                                                                {log.type === 'share' ? 'Post Shared' : 'New Comment'}
+                                                                {log.type === 'share' ? 'Post Shared' :
+                                                                    log.type === 'comment' ? 'New Comment' :
+                                                                        'Post Viewed'}
                                                             </p>
                                                             <p className="text-xs text-gray-500">
                                                                 {log.postId ? `Post ID: ${log.postId}` : 'Unknown Post'}
@@ -534,7 +568,7 @@ const Dashboard = () => {
 
                                         {/* Actions */}
                                         <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
-                                            <button type="button" onClick={() => setShowPreview(true)} className="btn-secondary flex-1">
+                                            <button type="button" onClick={() => handlePreviewClick()} className="btn-secondary flex-1">
                                                 Preview
                                             </button>
                                             <button
@@ -587,6 +621,9 @@ const Dashboard = () => {
                                 </div>
                                 <div dangerouslySetInnerHTML={{ __html: content || '<p class="text-gray-400 italic">Start writing your content...</p>' }} />
                             </article>
+
+                            {/* Comment Section */}
+                            <CommentSection postId={editingPostId || 'preview-post'} />
                         </div>
                     </div>
                 </div>

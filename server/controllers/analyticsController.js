@@ -26,4 +26,26 @@ const getStats = async (req, res) => {
   }
 };
 
-module.exports = { trackEvent, getStats };
+const getComments = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const comments = await analyticsService.getComments(postId);
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ error: 'Could not fetch comments' });
+  }
+};
+
+const getPostStats = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const stats = await analyticsService.getPostStats(postId);
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching post stats:', error);
+    res.status(500).json({ error: 'Could not fetch post stats' });
+  }
+};
+
+module.exports = { trackEvent, getStats, getComments, getPostStats };

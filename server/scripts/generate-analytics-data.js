@@ -34,6 +34,13 @@ async function generateAnalyticsData() {
     await request(`${API_URL}/analytics/track`, 'POST', { type: 'comment', data: { postId: 'test-post-1', content: 'Very helpful.' } });
     console.log('Comments tracked.');
 
+    // 3. Track Views
+    console.log('\n3. Tracking Views...');
+    await request(`${API_URL}/analytics/track`, 'POST', { type: 'view', data: { postId: 'test-post-1' } });
+    await request(`${API_URL}/analytics/track`, 'POST', { type: 'view', data: { postId: 'test-post-1' } });
+    await request(`${API_URL}/analytics/track`, 'POST', { type: 'view', data: { postId: 'test-post-2' } });
+    console.log('Views tracked.');
+
     console.log('\nSUCCESS: Dummy data generated.');
 
   } catch (error) {
