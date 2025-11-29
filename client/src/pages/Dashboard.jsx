@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import RichTextEditor from '../components/RichTextEditor';
 import CommentSection from '../components/CommentSection';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share, ThumbsUp } from 'lucide-react';
 import { API_URL, APP_URL } from '../config';
 
@@ -18,12 +18,23 @@ const Dashboard = () => {
     const [apiKeys, setApiKeys] = useState([]);
     const [newKeyName, setNewKeyName] = useState('');
     const [showPreview, setShowPreview] = useState(false);
-    const [activeView, setActiveView] = useState('dashboard'); // 'dashboard', 'posts', 'create'
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedPostForEmbed, setSelectedPostForEmbed] = useState(null);
     const [showEmbedModal, setShowEmbedModal] = useState(false);
     const [postStats, setPostStats] = useState({});
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const getActiveView = () => {
+        const path = location.pathname;
+        if (path.includes('/dashboard/analytics')) return 'analytics';
+        if (path.includes('/dashboard/posts')) return 'posts';
+        if (path.includes('/dashboard/integrations')) return 'integrations';
+        if (path.includes('/dashboard/create')) return 'create';
+        return 'dashboard';
+    };
+
+    const activeView = getActiveView();
 
     const [analyticsStats, setAnalyticsStats] = useState({});
 
@@ -124,7 +135,7 @@ const Dashboard = () => {
             }
             resetForm();
             fetchPosts();
-            setActiveView('posts');
+            navigate('/dashboard/posts');
         } catch (error) {
             console.error('Error saving post:', error);
             alert('Failed to save post');
@@ -150,7 +161,7 @@ const Dashboard = () => {
         setCoverImage(post.coverImage);
         setStatus(post.status || 'published');
         setEditingPostId(post.postId);
-        setActiveView('create');
+        navigate('/dashboard/create');
     };
 
     const handleShareClick = (post) => {
@@ -207,8 +218,8 @@ const Dashboard = () => {
     const SidebarItem = ({ view, icon: Icon, label }) => (
         <button
             onClick={() => {
-                setActiveView(view);
                 if (view === 'create') resetForm();
+                navigate(view === 'dashboard' ? '/dashboard' : `/dashboard/${view}`);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeView === view
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
@@ -457,7 +468,7 @@ const Dashboard = () => {
                                         <h1 className="text-2xl font-bold text-gray-900">My Posts</h1>
                                         <p className="text-gray-500 mt-1">Manage and view your published content.</p>
                                     </div>
-                                    <button onClick={() => { resetForm(); setActiveView('create'); }} className="btn-primary flex items-center gap-2">
+                                    <button onClick={() => { resetForm(); navigate('/dashboard/create'); }} className="btn-primary flex items-center gap-2">
                                         <Plus size={18} />
                                         New Post
                                     </button>
@@ -528,7 +539,7 @@ const Dashboard = () => {
                                             </div>
                                             <h3 className="text-lg font-medium text-gray-900">No posts yet</h3>
                                             <p className="text-gray-500 mt-1 mb-6">Start writing your first blog post today.</p>
-                                            <button onClick={() => { resetForm(); setActiveView('create'); }} className="btn-primary">
+                                            <button onClick={() => { resetForm(); navigate('/dashboard/create'); }} className="btn-primary">
                                                 Create Post
                                             </button>
                                         </div>
