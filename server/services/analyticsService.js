@@ -1,4 +1,5 @@
 const { docClient } = require('../db');
+const postService = require('./postService');
 const { PutCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const { v4: uuidv4 } = require('uuid');
 
@@ -32,12 +33,28 @@ const getLogs = async () => {
   return data.Items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 };
 
-const getComments = async (postId) => {
+const getComments = async (postId, userId) => {
+  // Verify ownership
+  const posts = await postService.getPostsByUserId(userId);
+  const userPostIds = posts.map(p => p.postId);
+  
+  if (!userPostIds.includes(postId)) {
+    throw new Error('Unauthorized access to post stats');
+  }
+
   const logs = await getLogs();
   return logs.filter(l => l.type === 'comment' && l.postId === postId);
 };
 
-const getPostStats = async (postId) => {
+const getPostStats = async (postId, userId) => {
+  // Verify ownership
+  const posts = await postService.getPostsByUserId(userId);
+  const userPostIds = posts.map(p => p.postId);
+  
+  if (!userPostIds.includes(postId)) {
+    throw new Error('Unauthorized access to post stats');
+  }
+
   const logs = await getLogs();
   const postLogs = logs.filter(l => l.postId === postId);
   
@@ -49,29 +66,40 @@ const getPostStats = async (postId) => {
   };
 };
 
-const getStats = async () => {
+const getStats = async (userId) => {
   const logs = await getLogs();
+  const posts = await postService.getPostsByUserId(userId);
+  const userPostIds = posts.map(p => p.postId);
+  
+  // Filter logs for user's posts
+  const userLogs = logs.filter(l => userPostIds.includes(l.postId));
   
   const stats = {
-    totalViews: logs.filter(l => l.type === 'view').length,
-    totalShares: logs.filter(l => l.type === 'share').length,
-    totalComments: logs.filter(l => l.type === 'comment').length,
-    totalLikes: logs.filter(l => l.type === 'like').length,
-    recentActivity: logs.slice(0, 10)
+    totalViews: userLogs.filter(l => l.type === 'view').length,
+    totalShares: userLogs.filter(l => l.type === 'share').length,
+    totalComments: userLogs.filter(l => l.type === 'comment').length,
+    totalLikes: userLogs.filter(l => l.type === 'like').length,
+    recentActivity: userLogs.slice(0, 10)
   };
   
   return stats;
 };
 
-const getAllPostStats = async () => {
+const getAllPostStats = async (userId) => {
   const logs = await getLogs();
+  const posts = await postService.getPostsByUserId(userId);
+  const userPostIds = posts.map(p => p.postId);
+
   const stats = {};
 
+  // Initialize stats for all user posts
+  userPostIds.forEach(id => {
+    stats[id] = { views: 0, shares: 0, comments: 0, likes: 0 };
+  });
+
   logs.forEach(log => {
-    if (!log.postId) return;
-    if (!stats[log.postId]) {
-      stats[log.postId] = { views: 0, shares: 0, comments: 0, likes: 0 };
-    }
+    if (!log.postId || !userPostIds.includes(log.postId)) return;
+    
     if (log.type === 'view') stats[log.postId].views++;
     if (log.type === 'share') stats[log.postId].shares++;
     if (log.type === 'comment') stats[log.postId].comments++;

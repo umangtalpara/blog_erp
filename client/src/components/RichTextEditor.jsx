@@ -55,6 +55,7 @@ const VideoExtension = Node.create({
 
 const MenuButton = ({ onClick, isActive, disabled, children, title }) => (
     <button
+        type="button"
         onClick={onClick}
         disabled={disabled}
         title={title}

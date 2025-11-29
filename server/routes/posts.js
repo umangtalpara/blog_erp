@@ -1,22 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/postController');
-const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
-// Middleware to verify JWT
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
+const authenticateToken = require('../middleware/auth');
 
 // Create Post (Protected)
 router.post('/posts', authenticateToken, postController.createPost);
