@@ -281,10 +281,10 @@ const Dashboard = () => {
                     {/* Navigation */}
                     <div className="flex-1 px-4 py-6 space-y-2">
                         <SidebarItem view="dashboard" icon={LayoutDashboard} label="Dashboard" />
-                        <SidebarItem view="analytics" icon={BarChart2} label="Analytics" />
-                        <SidebarItem view="posts" icon={FileText} label="My Posts" />
-                        <SidebarItem view="integrations" icon={Code} label="Integrations" />
                         <SidebarItem view="create" icon={Plus} label="Create New Post" />
+                        <SidebarItem view="posts" icon={FileText} label="My Posts" />
+                        <SidebarItem view="analytics" icon={BarChart2} label="Analytics" />
+                        <SidebarItem view="integrations" icon={Code} label="Integrations" />
                     </div>
 
                     {/* User Profile & Logout */}
