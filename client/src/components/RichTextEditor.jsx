@@ -1,5 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Loader from './Loader';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
@@ -11,6 +12,7 @@ import {
     Heading1, Heading2, Pilcrow, List, ListOrdered,
     Image as ImageIcon, Video, Undo, Redo, Youtube as YoutubeIcon
 } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 const VideoExtension = Node.create({
     name: 'video',
@@ -69,6 +71,9 @@ const MenuButton = ({ onClick, isActive, disabled, children, title }) => (
 );
 
 const MenuBar = ({ editor }) => {
+    const { showNotification } = useNotification();
+    const [isUploading, setIsUploading] = useState(false);
+
     if (!editor) {
         return null;
     }
@@ -89,10 +94,15 @@ const MenuBar = ({ editor }) => {
                     editor.chain().focus().setImage({ src: data.publicUrl }).run();
                 } catch (error) {
                     console.error("Image upload failed", error);
-                    alert("Failed to upload image");
+                    showNotification("Failed to upload image", "error");
+                } finally {
+                    setIsUploading(false);
                 }
+            } else {
+                setIsUploading(false);
             }
         };
+        setIsUploading(true);
         input.click();
     };
 
@@ -112,10 +122,15 @@ const MenuBar = ({ editor }) => {
                     editor.chain().focus().setVideo({ src: data.publicUrl }).run();
                 } catch (error) {
                     console.error("Video upload failed", error);
-                    alert("Failed to upload video");
+                    showNotification("Failed to upload video", "error");
+                } finally {
+                    setIsUploading(false);
                 }
+            } else {
+                setIsUploading(false);
             }
         };
+        setIsUploading(true);
         input.click();
     };
 
@@ -184,6 +199,12 @@ const MenuBar = ({ editor }) => {
                     <Redo size={18} />
                 </MenuButton>
             </div>
+            {isUploading && (
+                <div className="flex items-center gap-2 px-2 border-l border-gray-200">
+                    <Loader size="small" />
+                    <span className="text-xs text-gray-500 font-medium">Uploading...</span>
+                </div>
+            )}
         </div>
     );
 };

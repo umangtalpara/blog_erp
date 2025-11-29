@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
+import { useNotification } from '../context/NotificationContext';
 
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +11,7 @@ const Auth = () => {
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { showNotification } = useNotification();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,7 +28,7 @@ const Auth = () => {
             }
             navigate('/dashboard');
         } catch (error) {
-            alert(error.response?.data?.error || 'An error occurred');
+            showNotification(error.response?.data?.error || 'An error occurred', 'error');
         } finally {
             setLoading(false);
         }

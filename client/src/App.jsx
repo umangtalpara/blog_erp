@@ -9,20 +9,24 @@ const PrivateRoute = ({ children }) => {
   return token ? children : <Navigate to="/auth" />;
 };
 
+import { NotificationProvider } from './context/NotificationContext';
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/dashboard/*" element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        } />
-        <Route path="/embed" element={<EmbedPosts />} />
-        <Route path="/" element={<Navigate to="/dashboard" />} />
-      </Routes>
-    </Router>
+    <NotificationProvider>
+      <Router>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard/*" element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/embed" element={<EmbedPosts />} />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      </Router>
+    </NotificationProvider>
   );
 }
 

@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import RichTextEditor from '../components/RichTextEditor';
 import CommentSection from '../components/CommentSection';
+import Loader from '../components/Loader';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useNotification } from '../context/NotificationContext';
 import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share, ThumbsUp } from 'lucide-react';
 import { API_URL, APP_URL } from '../config';
 
@@ -22,8 +24,11 @@ const Dashboard = () => {
     const [selectedPostForEmbed, setSelectedPostForEmbed] = useState(null);
     const [showEmbedModal, setShowEmbedModal] = useState(false);
     const [postStats, setPostStats] = useState({});
+    const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+    const { showNotification } = useNotification();
 
     const getActiveView = () => {
         const path = location.pathname;
@@ -69,6 +74,7 @@ const Dashboard = () => {
     };
 
     const fetchPosts = async () => {
+        setIsLoadingPosts(true);
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(`${API_URL}/api/posts`, {
@@ -80,6 +86,8 @@ const Dashboard = () => {
             fetchPostStats();
         } catch (error) {
             console.error('Error fetching posts:', error);
+        } finally {
+            setIsLoadingPosts(false);
         }
     };
 
@@ -126,19 +134,19 @@ const Dashboard = () => {
                 await axios.put(`${API_URL}/api/posts/${editingPostId}`, { title, content, coverImage, status: postStatus }, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                alert('Post updated successfully!');
+                showNotification('Post updated successfully!', 'success');
             } else {
                 await axios.post(`${API_URL}/api/posts`, { title, content, coverImage, status: postStatus }, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                alert('Post created successfully!');
+                showNotification('Post created successfully!', 'success');
             }
             resetForm();
             fetchPosts();
             navigate('/dashboard/posts');
         } catch (error) {
             console.error('Error saving post:', error);
-            alert('Failed to save post');
+            showNotification('Failed to save post', 'error');
         }
     };
 
@@ -181,13 +189,16 @@ const Dashboard = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        setIsUploadingImage(true);
         try {
             const { data } = await axios.get(`${API_URL}/media/upload-url?fileName=${file.name}&fileType=${file.type}`);
             await axios.put(data.url, file, { headers: { 'Content-Type': file.type } });
             setCoverImage(data.publicUrl);
         } catch (error) {
             console.error('Error uploading image:', error);
-            alert('Failed to upload cover image. Please try again.');
+            showNotification('Failed to upload cover image. Please try again.', 'error');
+        } finally {
+            setIsUploadingImage(false);
         }
     };
 
@@ -496,80 +507,86 @@ const Dashboard = () => {
                                     </button>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {posts.map((post) => (
-                                        <div key={post.postId} className="card group hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col">
-                                            {post.coverImage ? (
-                                                <div className="h-48 overflow-hidden relative">
-                                                    <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                                    <div className="absolute top-2 right-2">
-                                                        <span className={`px-2 py-1 text-xs font-medium rounded-full shadow-sm ${post.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                            {post.status === 'published' ? 'Published' : 'Draft'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-300 relative">
-                                                    <FileText size={48} />
-                                                    <div className="absolute top-2 right-2">
-                                                        <span className={`px-2 py-1 text-xs font-medium rounded-full shadow-sm ${post.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                            {post.status === 'published' ? 'Published' : 'Draft'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <div className="p-5 flex-1 flex flex-col">
-                                                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">{post.title}</h3>
-                                                <div className="text-gray-500 text-sm mb-4 line-clamp-2 h-10" dangerouslySetInnerHTML={{ __html: post.content }} />
-                                                <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-4">
-                                                    <div className="flex justify-between items-center text-xs text-gray-500">
-                                                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                                                        <div className="flex items-center gap-4">
-                                                            <span className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors" title="Views">
-                                                                <Eye size={14} /> {postStats[post.postId]?.views || 0}
-                                                            </span>
-                                                            <span className="flex items-center gap-1.5 hover:text-blue-600 transition-colors" title="Shares">
-                                                                <Share2 size={14} /> {postStats[post.postId]?.shares || 0}
-                                                            </span>
-                                                            <span className="flex items-center gap-1.5 hover:text-pink-600 transition-colors" title="Likes">
-                                                                <ThumbsUp size={14} /> {postStats[post.postId]?.likes || 0}
-                                                            </span>
-                                                            <span className="flex items-center gap-1.5 hover:text-green-600 transition-colors" title="Comments">
-                                                                <MessageSquare size={14} /> {postStats[post.postId]?.comments || 0}
+                                {isLoadingPosts ? (
+                                    <div className="flex justify-center items-center py-20">
+                                        <Loader size="large" />
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {posts.map((post) => (
+                                            <div key={post.postId} className="card group hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col">
+                                                {post.coverImage ? (
+                                                    <div className="h-48 overflow-hidden relative">
+                                                        <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                        <div className="absolute top-2 right-2">
+                                                            <span className={`px-2 py-1 text-xs font-medium rounded-full shadow-sm ${post.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                                {post.status === 'published' ? 'Published' : 'Draft'}
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
-                                                        <button onClick={() => handleCardPreview(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors" title="Preview">
-                                                            <Eye size={14} /> Preview
-                                                        </button>
-                                                        <button onClick={() => handleShareClick(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" title="Share / Embed">
-                                                            <Share size={14} /> Share
-                                                        </button>
-                                                        <button onClick={() => handleEditClick(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors">
-                                                            <Edit2 size={14} /> Edit
-                                                        </button>
-                                                        <button onClick={() => handleDeletePost(post.postId)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
-                                                            <Trash2 size={14} /> Delete
-                                                        </button>
+                                                ) : (
+                                                    <div className="h-48 bg-gray-100 flex items-center justify-center text-gray-300 relative">
+                                                        <FileText size={48} />
+                                                        <div className="absolute top-2 right-2">
+                                                            <span className={`px-2 py-1 text-xs font-medium rounded-full shadow-sm ${post.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                                {post.status === 'published' ? 'Published' : 'Draft'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className="p-5 flex-1 flex flex-col">
+                                                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">{post.title}</h3>
+                                                    <div className="text-gray-500 text-sm mb-4 line-clamp-2 h-10" dangerouslySetInnerHTML={{ __html: post.content }} />
+                                                    <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-4">
+                                                        <div className="flex justify-between items-center text-xs text-gray-500">
+                                                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                                            <div className="flex items-center gap-4">
+                                                                <span className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors" title="Views">
+                                                                    <Eye size={14} /> {postStats[post.postId]?.views || 0}
+                                                                </span>
+                                                                <span className="flex items-center gap-1.5 hover:text-blue-600 transition-colors" title="Shares">
+                                                                    <Share2 size={14} /> {postStats[post.postId]?.shares || 0}
+                                                                </span>
+                                                                <span className="flex items-center gap-1.5 hover:text-pink-600 transition-colors" title="Likes">
+                                                                    <ThumbsUp size={14} /> {postStats[post.postId]?.likes || 0}
+                                                                </span>
+                                                                <span className="flex items-center gap-1.5 hover:text-green-600 transition-colors" title="Comments">
+                                                                    <MessageSquare size={14} /> {postStats[post.postId]?.comments || 0}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                                                            <button onClick={() => handleCardPreview(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors" title="Preview">
+                                                                <Eye size={14} /> Preview
+                                                            </button>
+                                                            <button onClick={() => handleShareClick(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" title="Share / Embed">
+                                                                <Share size={14} /> Share
+                                                            </button>
+                                                            <button onClick={() => handleEditClick(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors">
+                                                                <Edit2 size={14} /> Edit
+                                                            </button>
+                                                            <button onClick={() => handleDeletePost(post.postId)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                                                                <Trash2 size={14} /> Delete
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                    {posts.length === 0 && (
-                                        <div className="col-span-full text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <FileText size={32} className="text-gray-400" />
+                                        ))}
+                                        {posts.length === 0 && (
+                                            <div className="col-span-full text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                    <FileText size={32} className="text-gray-400" />
+                                                </div>
+                                                <h3 className="text-lg font-medium text-gray-900">No posts yet</h3>
+                                                <p className="text-gray-500 mt-1 mb-6">Start writing your first blog post today.</p>
+                                                <button onClick={() => { resetForm(); navigate('/dashboard/create'); }} className="btn-primary">
+                                                    Create Post
+                                                </button>
                                             </div>
-                                            <h3 className="text-lg font-medium text-gray-900">No posts yet</h3>
-                                            <p className="text-gray-500 mt-1 mb-6">Start writing your first blog post today.</p>
-                                            <button onClick={() => { resetForm(); navigate('/dashboard/create'); }} className="btn-primary">
-                                                Create Post
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -709,6 +726,14 @@ const Dashboard = () => {
                                                     )}
                                                 </div>
                                             </label>
+                                            {isUploadingImage && (
+                                                <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-xl z-10">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <Loader />
+                                                        <span className="text-sm font-medium text-gray-600">Uploading...</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Rich Text Editor */}
@@ -781,6 +806,7 @@ const Dashboard = () => {
                     </div>
                 </div>
             )}
+
             {/* Embed Modal */}
             {showEmbedModal && selectedPostForEmbed && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[70] animate-fade-in">
