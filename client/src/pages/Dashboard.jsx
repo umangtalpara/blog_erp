@@ -215,6 +215,28 @@ const Dashboard = () => {
         }
     };
 
+    const handleCardPreview = async (post) => {
+        setTitle(post.title);
+        setContent(post.content);
+        setCoverImage(post.coverImage);
+        setEditingPostId(post.postId);
+        setShowPreview(true);
+
+        // Track view event
+        try {
+            await axios.post(`${API_URL}/analytics/track`, {
+                type: 'view',
+                data: {
+                    postId: post.postId,
+                    platform: 'web'
+                }
+            });
+            fetchAnalytics(); // Refresh stats
+        } catch (error) {
+            console.error('Error tracking view:', error);
+        }
+    };
+
     const SidebarItem = ({ view, icon: Icon, label }) => (
         <button
             onClick={() => {
@@ -518,6 +540,9 @@ const Dashboard = () => {
                                                         </div>
                                                     </div>
                                                     <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                                                        <button onClick={() => handleCardPreview(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors" title="Preview">
+                                                            <Eye size={14} /> Preview
+                                                        </button>
                                                         <button onClick={() => handleShareClick(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" title="Share / Embed">
                                                             <Share size={14} /> Share
                                                         </button>
