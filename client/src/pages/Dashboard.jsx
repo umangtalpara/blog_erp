@@ -265,7 +265,7 @@ const Dashboard = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="h-screen overflow-hidden bg-gray-50 flex">
             {/* Sidebar */}
             <aside
                 className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -279,7 +279,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Navigation */}
-                    <div className="flex-1 px-4 py-6 space-y-2">
+                    <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                         <SidebarItem view="dashboard" icon={LayoutDashboard} label="Dashboard" />
                         <SidebarItem view="create" icon={Plus} label="Create New Post" />
                         <SidebarItem view="posts" icon={FileText} label="My Posts" />
