@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
@@ -17,7 +18,7 @@ const Auth = () => {
         const payload = isLogin ? { email, password } : { email, password, username };
 
         try {
-            const res = await axios.post(`http://localhost:5000${endpoint}`, payload);
+            const res = await axios.post(`${API_URL}${endpoint}`, payload);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('apiKey', res.data.apiKey);
             if (res.data.username) {

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
 import { ExternalLink, Calendar, User } from 'lucide-react';
+import { API_URL, APP_URL } from '../config';
+
 
 const EmbedPosts = () => {
     const [searchParams] = useSearchParams();
@@ -24,12 +26,12 @@ const EmbedPosts = () => {
         try {
             let data;
             if (postId) {
-                const response = await axios.get(`http://localhost:5000/api/public/posts/${postId}`, {
+                const response = await axios.get(`${API_URL}/api/public/posts/${postId}`, {
                     headers: { 'x-cms-api-key': apiKey }
                 });
                 data = [response.data]; // Wrap single post in array
             } else {
-                const response = await axios.get('http://localhost:5000/api/public/posts', {
+                const response = await axios.get(`${API_URL}/api/public/posts`, {
                     headers: { 'x-cms-api-key': apiKey }
                 });
                 data = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -150,7 +152,7 @@ const EmbedPosts = () => {
             )}
 
             <div className="text-center py-4 border-t border-gray-100 mt-4 bg-gray-50">
-                <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-indigo-600 transition-colors font-medium flex items-center justify-center gap-1">
+                <a href={APP_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-indigo-600 transition-colors font-medium flex items-center justify-center gap-1">
                     Powered by <span className="font-bold">Blog ERP</span>
                 </a>
             </div>

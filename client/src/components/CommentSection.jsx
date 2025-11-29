@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MessageSquare, Send, User } from 'lucide-react';
+import { API_URL } from '../config';
+
 
 const CommentSection = ({ postId }) => {
     const [comments, setComments] = useState([]);
@@ -15,7 +17,7 @@ const CommentSection = ({ postId }) => {
 
     const fetchComments = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/analytics/comments/${postId}`);
+            const response = await axios.get(`${API_URL}/analytics/comments/${postId}`);
             setComments(response.data);
         } catch (error) {
             console.error('Error fetching comments:', error);
@@ -28,7 +30,7 @@ const CommentSection = ({ postId }) => {
 
         setLoading(true);
         try {
-            await axios.post('http://localhost:5000/analytics/track', {
+            await axios.post(`${API_URL}/analytics/track`, {
                 type: 'comment',
                 data: {
                     postId,

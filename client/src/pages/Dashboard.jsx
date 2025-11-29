@@ -4,6 +4,8 @@ import RichTextEditor from '../components/RichTextEditor';
 import CommentSection from '../components/CommentSection';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share, ThumbsUp } from 'lucide-react';
+import { API_URL, APP_URL } from '../config';
+
 
 const Dashboard = () => {
     const [posts, setPosts] = useState([]);
@@ -34,7 +36,7 @@ const Dashboard = () => {
     const fetchAnalytics = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/analytics/stats', {
+            const response = await axios.get(`${API_URL}/analytics/stats`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAnalyticsStats(response.data);
@@ -46,7 +48,7 @@ const Dashboard = () => {
     const fetchApiKeys = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api-keys', {
+            const response = await axios.get(`${API_URL}/api-keys`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setApiKeys(response.data);
@@ -58,7 +60,7 @@ const Dashboard = () => {
     const fetchPosts = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/posts', {
+            const response = await axios.get(`${API_URL}/api/posts`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Sort posts by createdAt desc
@@ -72,7 +74,7 @@ const Dashboard = () => {
 
     const fetchPostStats = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/analytics/posts');
+            const response = await axios.get(`${API_URL}/analytics/posts`);
             setPostStats(response.data);
         } catch (error) {
             console.error('Error fetching post stats:', error);
@@ -82,7 +84,7 @@ const Dashboard = () => {
     const createApiKey = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api-keys', { name: newKeyName || 'New Key' }, {
+            await axios.post(`${API_URL}/api-keys`, { name: newKeyName || 'New Key' }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNewKeyName('');
@@ -96,7 +98,7 @@ const Dashboard = () => {
         if (!window.confirm('Are you sure you want to delete this key?')) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api-keys/${apiKey}`, {
+            await axios.delete(`${API_URL}/api-keys/${apiKey}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchApiKeys();
@@ -110,12 +112,12 @@ const Dashboard = () => {
         try {
             const token = localStorage.getItem('token');
             if (editingPostId) {
-                await axios.put(`http://localhost:5000/api/posts/${editingPostId}`, { title, content, coverImage, status: postStatus }, {
+                await axios.put(`${API_URL}/api/posts/${editingPostId}`, { title, content, coverImage, status: postStatus }, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert('Post updated successfully!');
             } else {
-                await axios.post('http://localhost:5000/api/posts', { title, content, coverImage, status: postStatus }, {
+                await axios.post(`${API_URL}/api/posts`, { title, content, coverImage, status: postStatus }, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert('Post created successfully!');
@@ -133,7 +135,7 @@ const Dashboard = () => {
         if (!window.confirm('Are you sure you want to delete this post?')) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/posts/${postId}`, {
+            await axios.delete(`${API_URL}/api/posts/${postId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchPosts();
@@ -169,7 +171,7 @@ const Dashboard = () => {
         if (!file) return;
 
         try {
-            const { data } = await axios.get(`http://localhost:5000/media/upload-url?fileName=${file.name}&fileType=${file.type}`);
+            const { data } = await axios.get(`${API_URL}/media/upload-url?fileName=${file.name}&fileType=${file.type}`);
             await axios.put(data.url, file, { headers: { 'Content-Type': file.type } });
             setCoverImage(data.publicUrl);
         } catch (error) {
@@ -189,7 +191,7 @@ const Dashboard = () => {
         setShowPreview(true);
         // Track view event
         try {
-            await axios.post('http://localhost:5000/analytics/track', {
+            await axios.post(`${API_URL}/analytics/track`, {
                 type: 'view',
                 data: {
                     postId: editingPostId || 'preview-post',
@@ -557,7 +559,7 @@ const Dashboard = () => {
                                         </div>
                                         <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
                                             <code className="text-sm text-gray-300 font-mono">
-                                                <span className="text-purple-400">GET</span> http://localhost:5000/api/public/posts<br />
+                                                <span className="text-purple-400">GET</span> {API_URL}/api/public/posts<br />
                                                 <span className="text-gray-500">Headers:</span><br />
                                                 x-cms-api-key: {apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}
                                             </code>
@@ -581,7 +583,7 @@ const Dashboard = () => {
 <div class="blog-erp-embed" data-api-key="${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}"></div>
 
 <!-- Load Script -->
-<script src="http://localhost:5173/embed.js" async></script>`}
+<script src="${APP_URL}/embed.js" async></script>`}
                                             </pre>
                                         </div>
                                     </div>
@@ -600,7 +602,7 @@ const Dashboard = () => {
                                         <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
                                             <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
                                                 {`<iframe 
-  src="http://localhost:5173/embed?apiKey=${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}"
+  src="${APP_URL}/embed?apiKey=${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}"
   width="100%" 
   height="600" 
   frameborder="0"
@@ -768,7 +770,7 @@ const Dashboard = () => {
                                 </h4>
                                 <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
                                     <code className="text-sm text-gray-300 font-mono">
-                                        <span className="text-purple-400">GET</span> http://localhost:5000/api/public/posts/{selectedPostForEmbed.postId}<br />
+                                        <span className="text-purple-400">GET</span> {API_URL}/api/public/posts/{selectedPostForEmbed.postId}<br />
                                         <span className="text-gray-500">Headers:</span><br />
                                         x-cms-api-key: {apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}
                                     </code>
@@ -780,31 +782,20 @@ const Dashboard = () => {
                                 <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
                                     <Code size={16} /> JavaScript Embed
                                 </h4>
-                                <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
-                                    <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
-                                        {`<div class="blog-erp-embed" 
-     data-api-key="${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}"
-     data-post-id="${selectedPostForEmbed.postId}">
-</div>
-<script src="http://localhost:5173/embed.js" async></script>`}
-                                    </pre>
-                                </div>
-                            </div>
-
-                            {/* iFrame Embed */}
-                            <div>
-                                <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                    <LayoutDashboard size={16} /> iFrame Widget
-                                </h4>
-                                <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
-                                    <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
-                                        {`<iframe 
-  src="http://localhost:5173/embed?apiKey=${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}&postId=${selectedPostForEmbed.postId}"
+                                <div>
+                                    <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                        <LayoutDashboard size={16} /> iFrame Widget
+                                    </h4>
+                                    <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
+                                        <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
+                                            {`<iframe 
+  src="${APP_URL}/embed?apiKey=${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}&postId=${selectedPostForEmbed.postId}"
   width="100%" 
   height="600" 
   frameborder="0"
 ></iframe>`}
-                                    </pre>
+                                        </pre>
+                                    </div>
                                 </div>
                             </div>
                         </div>

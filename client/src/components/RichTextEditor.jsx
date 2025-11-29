@@ -82,7 +82,7 @@ const MenuBar = ({ editor }) => {
             if (file) {
                 try {
                     // Get upload URL
-                    const { data } = await axios.get(`http://localhost:5000/media/upload-url?fileName=${file.name}&fileType=${file.type}`);
+                    const { data } = await axios.get(`${API_URL}/media/upload-url?fileName=${file.name}&fileType=${file.type}`);
                     // Upload to S3
                     await axios.put(data.url, file, { headers: { 'Content-Type': file.type } });
                     // Insert into editor (using the URL without query params)
@@ -105,7 +105,7 @@ const MenuBar = ({ editor }) => {
             if (file) {
                 try {
                     // Get upload URL
-                    const { data } = await axios.get(`http://localhost:5000/media/upload-url?fileName=${file.name}&fileType=${file.type}`);
+                    const { data } = await axios.get(`${API_URL}/media/upload-url?fileName=${file.name}&fileType=${file.type}`);
                     // Upload to S3
                     await axios.put(data.url, file, { headers: { 'Content-Type': file.type } });
                     // Insert into editor
