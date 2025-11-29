@@ -111,8 +111,15 @@ const getPostsByApiKey = async (apiKey) => {
     }
   };
 
-  const postsData = await docClient.send(new ScanCommand(postsParams));
-  return postsData.Items;
+  try {
+    const postsData = await docClient.send(new ScanCommand(postsParams));
+    console.log('getPostsByApiKey result:', postsData.Items ? postsData.Items.length : 'null');
+    return postsData.Items;
+  } catch (err) {
+    console.error('Error in getPostsByApiKey:', err);
+    require('fs').writeFileSync('service_error.log', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    throw err;
+  }
 };
 
 const getPostsByUserId = async (userId) => {

@@ -20,9 +20,15 @@ async function verify() {
 
         // 2. Get All Posts to find an ID
         console.log('Fetching all posts to get an ID...');
-        const listResponse = await fetch('http://localhost:5001/api/public/posts', {
+        const listResponse = await fetch('http://127.0.0.1:5000/api/public/posts', {
             headers: { 'x-cms-api-key': apiKey }
         });
+        
+        if (!listResponse.ok) {
+            console.error('List API failed:', listResponse.status, await listResponse.text());
+            return;
+        }
+
         const posts = await listResponse.json();
         console.log('List API Response:', JSON.stringify(posts).substring(0, 200));
         
@@ -40,7 +46,7 @@ async function verify() {
         console.log(`Testing Single Post API for ID: ${postId}`);
 
         // 3. Test Single Post API
-        const singleResponse = await fetch(`http://localhost:5001/api/public/posts/${postId}`, {
+        const singleResponse = await fetch(`http://127.0.0.1:5000/api/public/posts/${postId}`, {
             headers: { 'x-cms-api-key': apiKey }
         });
 

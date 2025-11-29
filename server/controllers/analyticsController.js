@@ -1,3 +1,4 @@
+
 const analyticsService = require('../services/analyticsService');
 
 const trackEvent = async (req, res) => {
@@ -48,4 +49,14 @@ const getPostStats = async (req, res) => {
   }
 };
 
-module.exports = { trackEvent, getStats, getComments, getPostStats };
+const getAllPostStats = async (req, res) => {
+  try {
+    const stats = await analyticsService.getAllPostStats();
+    res.json(stats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not fetch post stats' });
+  }
+};
+
+module.exports = { trackEvent, getStats, getComments, getPostStats, getAllPostStats };

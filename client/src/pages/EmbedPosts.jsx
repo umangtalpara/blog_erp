@@ -60,62 +60,98 @@ const EmbedPosts = () => {
     }
 
     return (
-        <div className="font-sans antialiased bg-white">
-            <div className="grid gap-6 p-4">
-                {posts.map((post) => (
-                    <article key={post.postId} className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col sm:flex-row h-full sm:h-48">
-                        {post.coverImage && (
-                            <div className="sm:w-48 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden">
-                                <img
-                                    src={post.coverImage}
-                                    alt={post.title}
-                                    className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
-                                />
-                            </div>
+        <div className="font-sans antialiased bg-white min-h-screen">
+            {postId && posts.length > 0 ? (
+                // Single Post View
+                <div className="max-w-4xl mx-auto p-6 md:p-12">
+                    <article className="prose prose-lg prose-indigo mx-auto">
+                        {posts[0].coverImage && (
+                            <img
+                                src={posts[0].coverImage}
+                                alt={posts[0].title}
+                                className="w-full h-[300px] md:h-[400px] object-cover rounded-2xl shadow-lg mb-8"
+                            />
                         )}
-                        <div className="p-5 flex flex-col flex-1 justify-between">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 hover:text-indigo-600 transition-colors">
-                                    <a href="#" className="hover:underline decoration-2 underline-offset-2 decoration-indigo-200">
-                                        {post.title}
-                                    </a>
-                                </h2>
-                                <div
-                                    className="text-gray-600 text-sm line-clamp-2 mb-4 prose prose-sm"
-                                    dangerouslySetInnerHTML={{ __html: post.content }}
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-50 mt-auto">
-                                <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
-                                    <span className="flex items-center gap-1">
-                                        <Calendar size={14} />
-                                        {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                        <User size={14} />
-                                        Author
-                                    </span>
+                        <h1 className="font-heading text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                            {posts[0].title}
+                        </h1>
+                        <div className="flex items-center gap-3 text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                                    <User size={16} />
                                 </div>
-                                <a href="#" className="text-indigo-600 hover:text-indigo-700 text-sm font-semibold flex items-center gap-1 group">
-                                    Read more
-                                    <ExternalLink size={14} className="group-hover:translate-x-1 transition-transform" />
-                                </a>
+                                <span className="font-medium text-gray-900">Author</span>
+                            </div>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                                <Calendar size={14} />
+                                <span>{new Date(posts[0].createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                             </div>
                         </div>
+                        <div
+                            className="text-gray-800 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: posts[0].content }}
+                        />
                     </article>
-                ))}
+                </div>
+            ) : (
+                // List View
+                <div className="grid gap-6 p-4">
+                    {posts.map((post) => (
+                        <article key={post.postId} className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col sm:flex-row h-full sm:h-48">
+                            {post.coverImage && (
+                                <div className="sm:w-48 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden">
+                                    <img
+                                        src={post.coverImage}
+                                        alt={post.title}
+                                        className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                                    />
+                                </div>
+                            )}
+                            <div className="p-5 flex flex-col flex-1 justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 hover:text-indigo-600 transition-colors">
+                                        <a href={`?apiKey=${apiKey}&postId=${post.postId}`} className="hover:underline decoration-2 underline-offset-2 decoration-indigo-200">
+                                            {post.title}
+                                        </a>
+                                    </h2>
+                                    <div
+                                        className="text-gray-600 text-sm line-clamp-2 mb-4 prose prose-sm"
+                                        dangerouslySetInnerHTML={{ __html: post.content }}
+                                    />
+                                </div>
 
-                {posts.length === 0 && (
-                    <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                        <p className="text-gray-500 font-medium">No published posts found.</p>
-                    </div>
-                )}
-            </div>
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-50 mt-auto">
+                                    <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
+                                        <span className="flex items-center gap-1">
+                                            <Calendar size={14} />
+                                            {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <User size={14} />
+                                            Author
+                                        </span>
+                                    </div>
+                                    <a href={`?apiKey=${apiKey}&postId=${post.postId}`} className="text-indigo-600 hover:text-indigo-700 text-sm font-semibold flex items-center gap-1 group">
+                                        Read more
+                                        <ExternalLink size={14} className="group-hover:translate-x-1 transition-transform" />
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    ))}
 
-            <div className="text-center py-4 border-t border-gray-100 mt-4">
-                <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-indigo-600 transition-colors font-medium">
-                    Powered by Blog ERP
+                    {posts.length === 0 && (
+                        <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                            <p className="text-gray-500 font-medium">No published posts found.</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            <div className="text-center py-4 border-t border-gray-100 mt-4 bg-gray-50">
+                <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-indigo-600 transition-colors font-medium flex items-center justify-center gap-1">
+                    Powered by <span className="font-bold">Blog ERP</span>
                 </a>
             </div>
         </div>

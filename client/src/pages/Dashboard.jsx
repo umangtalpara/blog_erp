@@ -3,7 +3,7 @@ import axios from 'axios';
 import RichTextEditor from '../components/RichTextEditor';
 import CommentSection from '../components/CommentSection';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share } from 'lucide-react';
+import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share, ThumbsUp } from 'lucide-react';
 
 const Dashboard = () => {
     const [posts, setPosts] = useState([]);
@@ -20,6 +20,7 @@ const Dashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [selectedPostForEmbed, setSelectedPostForEmbed] = useState(null);
     const [showEmbedModal, setShowEmbedModal] = useState(false);
+    const [postStats, setPostStats] = useState({});
     const navigate = useNavigate();
 
     const [analyticsStats, setAnalyticsStats] = useState({});
@@ -42,20 +43,6 @@ const Dashboard = () => {
         }
     };
 
-    const fetchPosts = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/posts', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            // Sort posts by createdAt desc
-            const sortedPosts = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            setPosts(sortedPosts);
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-        }
-    };
-
     const fetchApiKeys = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -65,6 +52,30 @@ const Dashboard = () => {
             setApiKeys(response.data);
         } catch (error) {
             console.error('Error fetching API keys:', error);
+        }
+    };
+
+    const fetchPosts = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:5000/api/posts', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            // Sort posts by createdAt desc
+            const sortedPosts = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setPosts(sortedPosts);
+            fetchPostStats();
+        } catch (error) {
+            console.error('Error fetching posts:', error);
+        }
+    };
+
+    const fetchPostStats = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/analytics/posts');
+            setPostStats(response.data);
+        } catch (error) {
+            console.error('Error fetching post stats:', error);
         }
     };
 
@@ -475,17 +486,33 @@ const Dashboard = () => {
                                             <div className="p-5 flex-1 flex flex-col">
                                                 <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">{post.title}</h3>
                                                 <div className="text-gray-500 text-sm mb-4 line-clamp-2 h-10" dangerouslySetInnerHTML={{ __html: post.content }} />
-                                                <div className="mt-auto pt-4 border-t border-gray-50 flex justify-between items-center">
-                                                    <span className="text-xs text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</span>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => handleShareClick(post)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Share / Embed">
-                                                            <Share size={16} />
+                                                <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-4">
+                                                    <div className="flex justify-between items-center text-xs text-gray-500">
+                                                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                                        <div className="flex items-center gap-4">
+                                                            <span className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors" title="Views">
+                                                                <Eye size={14} /> {postStats[post.postId]?.views || 0}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5 hover:text-blue-600 transition-colors" title="Shares">
+                                                                <Share2 size={14} /> {postStats[post.postId]?.shares || 0}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5 hover:text-pink-600 transition-colors" title="Likes">
+                                                                <ThumbsUp size={14} /> {postStats[post.postId]?.likes || 0}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5 hover:text-green-600 transition-colors" title="Comments">
+                                                                <MessageSquare size={14} /> {postStats[post.postId]?.comments || 0}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                                                        <button onClick={() => handleShareClick(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" title="Share / Embed">
+                                                            <Share size={14} /> Share
                                                         </button>
-                                                        <button onClick={() => handleEditClick(post)} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
-                                                            <Edit2 size={16} />
+                                                        <button onClick={() => handleEditClick(post)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors">
+                                                            <Edit2 size={14} /> Edit
                                                         </button>
-                                                        <button onClick={() => handleDeletePost(post.postId)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-                                                            <Trash2 size={16} />
+                                                        <button onClick={() => handleDeletePost(post.postId)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                                                            <Trash2 size={14} /> Delete
                                                         </button>
                                                     </div>
                                                 </div>

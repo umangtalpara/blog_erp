@@ -44,7 +44,8 @@ const getPostStats = async (postId) => {
   return {
     views: postLogs.filter(l => l.type === 'view').length,
     shares: postLogs.filter(l => l.type === 'share').length,
-    comments: postLogs.filter(l => l.type === 'comment').length
+    comments: postLogs.filter(l => l.type === 'comment').length,
+    likes: postLogs.filter(l => l.type === 'like').length
   };
 };
 
@@ -55,10 +56,29 @@ const getStats = async () => {
     totalViews: logs.filter(l => l.type === 'view').length,
     totalShares: logs.filter(l => l.type === 'share').length,
     totalComments: logs.filter(l => l.type === 'comment').length,
+    totalLikes: logs.filter(l => l.type === 'like').length,
     recentActivity: logs.slice(0, 10)
   };
   
   return stats;
 };
 
-module.exports = { logEvent, getLogs, getStats, getComments, getPostStats };
+const getAllPostStats = async () => {
+  const logs = await getLogs();
+  const stats = {};
+
+  logs.forEach(log => {
+    if (!log.postId) return;
+    if (!stats[log.postId]) {
+      stats[log.postId] = { views: 0, shares: 0, comments: 0, likes: 0 };
+    }
+    if (log.type === 'view') stats[log.postId].views++;
+    if (log.type === 'share') stats[log.postId].shares++;
+    if (log.type === 'comment') stats[log.postId].comments++;
+    if (log.type === 'like') stats[log.postId].likes++;
+  });
+
+  return stats;
+};
+
+module.exports = { logEvent, getLogs, getStats, getComments, getPostStats, getAllPostStats };

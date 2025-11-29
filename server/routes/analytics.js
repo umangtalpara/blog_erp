@@ -11,6 +11,7 @@ router.post('/track', analyticsController.trackEvent);
 // Note: You might want to add authenticateToken middleware here if strict security is needed
 router.get('/stats', analyticsController.getStats);
 router.get('/stats/:postId', analyticsController.getPostStats);
+router.get('/posts', analyticsController.getAllPostStats);
 router.get('/comments/:postId', analyticsController.getComments);
 
 module.exports = router;

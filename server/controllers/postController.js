@@ -49,6 +49,7 @@ const deletePost = async (req, res) => {
 };
 
 const getPublicPosts = async (req, res) => {
+  console.log('Hitting getPublicPosts');
   const apiKey = req.headers['x-cms-api-key'];
   if (!apiKey) return res.status(400).json({ error: 'API Key required' });
 
@@ -58,6 +59,7 @@ const getPublicPosts = async (req, res) => {
     res.json(posts);
   } catch (error) {
     console.error(error);
+    require('fs').writeFileSync('error.log', JSON.stringify(error, Object.getOwnPropertyNames(error)) + '\n' + error.stack);
     res.status(500).json({ error: 'Could not fetch posts', details: error.message });
   }
 };
