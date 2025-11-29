@@ -26,5 +26,6 @@ router.get('/posts', authenticateToken, postController.getUserPosts);
 
 // Get Public Posts (Public API)
 router.get('/public/posts', postController.getPublicPosts);
+router.get('/public/posts/:id', postController.getPublicPost);
 
 module.exports = router;

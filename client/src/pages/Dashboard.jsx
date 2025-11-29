@@ -3,7 +3,7 @@ import axios from 'axios';
 import RichTextEditor from '../components/RichTextEditor';
 import CommentSection from '../components/CommentSection';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye } from 'lucide-react';
+import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share } from 'lucide-react';
 
 const Dashboard = () => {
     const [posts, setPosts] = useState([]);
@@ -18,6 +18,8 @@ const Dashboard = () => {
     const [showPreview, setShowPreview] = useState(false);
     const [activeView, setActiveView] = useState('dashboard'); // 'dashboard', 'posts', 'create'
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [selectedPostForEmbed, setSelectedPostForEmbed] = useState(null);
+    const [showEmbedModal, setShowEmbedModal] = useState(false);
     const navigate = useNavigate();
 
     const [analyticsStats, setAnalyticsStats] = useState({});
@@ -138,6 +140,11 @@ const Dashboard = () => {
         setActiveView('create');
     };
 
+    const handleShareClick = (post) => {
+        setSelectedPostForEmbed(post);
+        setShowEmbedModal(true);
+    };
+
     const resetForm = () => {
         setTitle('');
         setContent('');
@@ -219,6 +226,7 @@ const Dashboard = () => {
                         <SidebarItem view="dashboard" icon={LayoutDashboard} label="Dashboard" />
                         <SidebarItem view="analytics" icon={BarChart2} label="Analytics" />
                         <SidebarItem view="posts" icon={FileText} label="My Posts" />
+                        <SidebarItem view="integrations" icon={Code} label="Integrations" />
                         <SidebarItem view="create" icon={Plus} label="Create New Post" />
                     </div>
 
@@ -470,6 +478,9 @@ const Dashboard = () => {
                                                 <div className="mt-auto pt-4 border-t border-gray-50 flex justify-between items-center">
                                                     <span className="text-xs text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</span>
                                                     <div className="flex gap-2">
+                                                        <button onClick={() => handleShareClick(post)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Share / Embed">
+                                                            <Share size={16} />
+                                                        </button>
                                                         <button onClick={() => handleEditClick(post)} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
                                                             <Edit2 size={16} />
                                                         </button>
@@ -493,6 +504,83 @@ const Dashboard = () => {
                                             </button>
                                         </div>
                                     )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* View: Integrations */}
+                        {activeView === 'integrations' && (
+                            <div className="space-y-8">
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-900">Integrations</h1>
+                                    <p className="text-gray-500 mt-1">Connect your blog content with other applications and websites.</p>
+                                </div>
+
+                                <div className="grid gap-6">
+                                    {/* REST API */}
+                                    <div className="card p-6">
+                                        <div className="flex items-start gap-4 mb-4">
+                                            <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
+                                                <Settings size={24} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg font-bold text-gray-900">REST API</h2>
+                                                <p className="text-sm text-gray-500">Fetch your content programmatically using our JSON API.</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
+                                            <code className="text-sm text-gray-300 font-mono">
+                                                <span className="text-purple-400">GET</span> http://localhost:5000/api/public/posts<br />
+                                                <span className="text-gray-500">Headers:</span><br />
+                                                x-cms-api-key: {apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}
+                                            </code>
+                                        </div>
+                                    </div>
+
+                                    {/* JavaScript Embed */}
+                                    <div className="card p-6">
+                                        <div className="flex items-start gap-4 mb-4">
+                                            <div className="p-3 bg-yellow-100 text-yellow-600 rounded-xl">
+                                                <Code size={24} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg font-bold text-gray-900">JavaScript Embed</h2>
+                                                <p className="text-sm text-gray-500">Copy and paste this snippet to show posts on any website.</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto relative group">
+                                            <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
+                                                {`<!-- Container for posts -->
+<div class="blog-erp-embed" data-api-key="${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}"></div>
+
+<!-- Load Script -->
+<script src="http://localhost:5173/embed.js" async></script>`}
+                                            </pre>
+                                        </div>
+                                    </div>
+
+                                    {/* iFrame Embed */}
+                                    <div className="card p-6">
+                                        <div className="flex items-start gap-4 mb-4">
+                                            <div className="p-3 bg-green-100 text-green-600 rounded-xl">
+                                                <LayoutDashboard size={24} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg font-bold text-gray-900">iFrame Widget</h2>
+                                                <p className="text-sm text-gray-500">Embed a ready-made widget directly into your page.</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
+                                            <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
+                                                {`<iframe 
+  src="http://localhost:5173/embed?apiKey=${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}"
+  width="100%" 
+  height="600" 
+  frameborder="0"
+></iframe>`}
+                                            </pre>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -624,6 +712,74 @@ const Dashboard = () => {
 
                             {/* Comment Section */}
                             <CommentSection postId={editingPostId || 'preview-post'} />
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Embed Modal */}
+            {showEmbedModal && selectedPostForEmbed && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[70] animate-fade-in">
+                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+                        <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex justify-between items-center z-10">
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                <Share size={20} className="text-indigo-600" />
+                                Embed Post: {selectedPostForEmbed.title}
+                            </h3>
+                            <button onClick={() => setShowEmbedModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X size={20} className="text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm">
+                                Use the snippets below to display this specific post on your website.
+                            </div>
+
+                            {/* REST API */}
+                            <div>
+                                <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                    <Settings size={16} /> REST API
+                                </h4>
+                                <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
+                                    <code className="text-sm text-gray-300 font-mono">
+                                        <span className="text-purple-400">GET</span> http://localhost:5000/api/public/posts/{selectedPostForEmbed.postId}<br />
+                                        <span className="text-gray-500">Headers:</span><br />
+                                        x-cms-api-key: {apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}
+                                    </code>
+                                </div>
+                            </div>
+
+                            {/* JavaScript Embed */}
+                            <div>
+                                <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                    <Code size={16} /> JavaScript Embed
+                                </h4>
+                                <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
+                                    <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
+                                        {`<div class="blog-erp-embed" 
+     data-api-key="${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}"
+     data-post-id="${selectedPostForEmbed.postId}">
+</div>
+<script src="http://localhost:5173/embed.js" async></script>`}
+                                    </pre>
+                                </div>
+                            </div>
+
+                            {/* iFrame Embed */}
+                            <div>
+                                <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                    <LayoutDashboard size={16} /> iFrame Widget
+                                </h4>
+                                <div className="bg-gray-900 rounded-xl p-4 overflow-x-auto">
+                                    <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap">
+                                        {`<iframe 
+  src="http://localhost:5173/embed?apiKey=${apiKeys.length > 0 ? apiKeys[0].apiKey : 'YOUR_API_KEY'}&postId=${selectedPostForEmbed.postId}"
+  width="100%" 
+  height="600" 
+  frameborder="0"
+></iframe>`}
+                                    </pre>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

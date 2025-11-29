@@ -58,7 +58,7 @@ const getPublicPosts = async (req, res) => {
     res.json(posts);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Could not fetch posts' });
+    res.status(500).json({ error: 'Could not fetch posts', details: error.message });
   }
 };
 
@@ -74,4 +74,20 @@ const getUserPosts = async (req, res) => {
   }
 };
 
-module.exports = { createPost, updatePost, deletePost, getPublicPosts, getUserPosts };
+const getPublicPost = async (req, res) => {
+  const apiKey = req.headers['x-cms-api-key'];
+  const { id } = req.params;
+
+  if (!apiKey) return res.status(400).json({ error: 'API Key required' });
+
+  try {
+    const post = await postService.getPublicPostById(id, apiKey);
+    if (!post) return res.status(404).json({ error: 'Post not found or unauthorized' });
+    res.json(post);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not fetch post' });
+  }
+};
+
+module.exports = { createPost, updatePost, deletePost, getPublicPosts, getUserPosts, getPublicPost };

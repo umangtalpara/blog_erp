@@ -126,4 +126,30 @@ const getPostsByUserId = async (userId) => {
   return data.Items;
 };
 
-module.exports = { createPost, updatePost, deletePost, getPostsByApiKey, getPostsByUserId };
+const getPublicPostById = async (postId, apiKey) => {
+  // 1. Find user by API Key
+  const keyParams = {
+    TableName: API_KEYS_TABLE,
+    Key: { apiKey }
+  };
+  const keyData = await docClient.send(new GetCommand(keyParams));
+  if (!keyData.Item) return null; // Invalid API Key
+  
+  const userId = keyData.Item.userId;
+
+  // 2. Get the post
+  const postParams = {
+    TableName: POSTS_TABLE,
+    Key: { postId }
+  };
+  const postData = await docClient.send(new GetCommand(postParams));
+  
+  // 3. Verify ownership and status
+  if (!postData.Item) return null; // Post not found
+  if (postData.Item.userId !== userId) return null; // Post doesn't belong to this API key's user
+  if (postData.Item.status !== 'published') return null; // Post is not published
+
+  return postData.Item;
+};
+
+module.exports = { createPost, updatePost, deletePost, getPostsByApiKey, getPostsByUserId, getPublicPostById };

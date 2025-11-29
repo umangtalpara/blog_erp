@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
+import EmbedPosts from './pages/EmbedPosts';
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -18,6 +19,7 @@ function App() {
             <Dashboard />
           </PrivateRoute>
         } />
+        <Route path="/embed" element={<EmbedPosts />} />
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>
     </Router>
