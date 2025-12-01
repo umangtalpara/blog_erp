@@ -20,6 +20,7 @@ app.use('/api', postRoutes);
 app.use('/media', mediaRoutes);
 app.use('/api-keys', apiKeyRoutes);
 app.use('/analytics', require('./routes/analytics'));
+app.use('/ai', require('./routes/ai'));
 
 app.get('/', (req, res) => {
   res.send('Headless CMS API is running');

@@ -5,7 +5,7 @@ import CommentSection from '../components/CommentSection';
 import Loader from '../components/Loader';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotification } from '../context/NotificationContext';
-import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share, ThumbsUp } from 'lucide-react';
+import { LogOut, Plus, Key, Trash2, LayoutDashboard, FileText, Settings, Menu, X, User, Edit2, CheckCircle, AlertCircle, BarChart2, Share2, MessageSquare, Eye, Code, Share, ThumbsUp, Sparkles, Wand2 } from 'lucide-react';
 import { API_URL, APP_URL } from '../config';
 
 
@@ -26,6 +26,13 @@ const Dashboard = () => {
     const [postStats, setPostStats] = useState({});
     const [isLoadingPosts, setIsLoadingPosts] = useState(false);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+    // AI State
+    const [showAiModal, setShowAiModal] = useState(false);
+    const [aiMode, setAiMode] = useState('generate'); // 'generate' or 'improve'
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isAiLoading, setIsAiLoading] = useState(false);
+
     const navigate = useNavigate();
     const location = useLocation();
     const { showNotification } = useNotification();
@@ -133,6 +140,49 @@ const Dashboard = () => {
             fetchApiKeys();
         } catch (error) {
             console.error('Error deleting API key:', error);
+        }
+    };
+
+    const openAiGenerateModal = () => {
+        setAiMode('generate');
+        setAiPrompt('');
+        setShowAiModal(true);
+    };
+
+    const openAiImproveModal = () => {
+        setAiMode('improve');
+        setAiPrompt('');
+        setShowAiModal(true);
+    };
+
+    const handleAiSubmit = async () => {
+        if (!aiPrompt.trim()) return;
+
+        setIsAiLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            if (aiMode === 'generate') {
+                const response = await axios.post(`${API_URL}/ai/generate`,
+                    { topic: aiPrompt },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                setTitle(response.data.title);
+                setContent(response.data.content);
+                showNotification('Blog post generated successfully!', 'success');
+            } else {
+                const response = await axios.post(`${API_URL}/ai/improve`,
+                    { content, instructions: aiPrompt },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                setContent(response.data.content);
+                showNotification('Content improved successfully!', 'success');
+            }
+            setShowAiModal(false);
+        } catch (error) {
+            console.error('AI Error:', error);
+            showNotification('Failed to process AI request. Please check your API key.', 'error');
+        } finally {
+            setIsAiLoading(false);
         }
     };
 
@@ -684,7 +734,18 @@ const Dashboard = () => {
                             <div className="max-w-4xl mx-auto">
                                 <div className="mb-6 flex justify-between items-center">
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900">{editingPostId ? 'Edit Post' : 'Create New Post'}</h1>
+                                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                                            {editingPostId ? 'Edit Post' : 'Create New Post'}
+                                            {!editingPostId && (
+                                                <button
+                                                    onClick={openAiGenerateModal}
+                                                    className="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full flex items-center gap-1 hover:bg-indigo-100 transition-colors"
+                                                >
+                                                    <Sparkles size={14} />
+                                                    Auto-Generate
+                                                </button>
+                                            )}
+                                        </h1>
                                         <p className="text-gray-500 mt-1">{editingPostId ? 'Update your existing content.' : 'Write and publish your next big idea.'}</p>
                                     </div>
                                     {editingPostId && (
@@ -750,7 +811,17 @@ const Dashboard = () => {
 
                                         {/* Rich Text Editor */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <label className="block text-sm font-medium text-gray-700">Content</label>
+                                                <button
+                                                    type="button"
+                                                    onClick={openAiImproveModal}
+                                                    className="text-xs flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-medium"
+                                                >
+                                                    <Wand2 size={12} />
+                                                    Improve with AI
+                                                </button>
+                                            </div>
                                             <div className="prose-editor-wrapper border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition-shadow">
                                                 <RichTextEditor content={content} onChange={setContent} />
                                             </div>
@@ -871,6 +942,71 @@ const Dashboard = () => {
                                         </pre>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* AI Modal */}
+            {showAiModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[80] animate-fade-in">
+                    <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl relative overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-indigo-50/50">
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
+                                {aiMode === 'generate' ? (
+                                    <>
+                                        <Sparkles className="text-indigo-600" size={20} />
+                                        Auto-Generate Post
+                                    </>
+                                ) : (
+                                    <>
+                                        <Wand2 className="text-indigo-600" size={20} />
+                                        Improve Content
+                                    </>
+                                )}
+                            </h3>
+                            <button onClick={() => setShowAiModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X size={20} className="text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-gray-600 mb-4 text-sm">
+                                {aiMode === 'generate'
+                                    ? "Enter a topic or title, and our AI will generate a complete blog post for you."
+                                    : "Describe how you want to improve the content (e.g., 'make it funnier', 'fix grammar', 'expand on the second paragraph')."}
+                            </p>
+                            <textarea
+                                value={aiPrompt}
+                                onChange={(e) => setAiPrompt(e.target.value)}
+                                placeholder={aiMode === 'generate' ? "E.g., The Future of Artificial Intelligence in Healthcare" : "E.g., Make the tone more professional and fix any typos."}
+                                className="w-full h-32 p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
+                                autoFocus
+                            />
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    onClick={() => setShowAiModal(false)}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                                    disabled={isAiLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleAiSubmit}
+                                    disabled={isAiLoading || !aiPrompt.trim()}
+                                    className="btn-primary flex items-center gap-2 px-6"
+                                >
+                                    {isAiLoading ? (
+                                        <>
+                                            <Loader size="small" color="white" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            {aiMode === 'generate' ? <Sparkles size={18} /> : <Wand2 size={18} />}
+                                            {aiMode === 'generate' ? 'Generate' : 'Improve'}
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
