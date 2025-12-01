@@ -16,7 +16,9 @@
 
     async function loadPosts(container, apiKey) {
         try {
-            const postId = container.getAttribute('data-post-id');
+            // Check URL params first, then data attribute
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('postId') || container.getAttribute('data-post-id');
             
             // Add basic styles
             const style = document.createElement('style');
@@ -178,6 +180,23 @@
                     background-color: #eef2ff;
                     color: #4f46e5;
                 }
+                .blog-erp-back-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.5rem 1rem;
+                    background-color: #f3f4f6;
+                    color: #4b5563;
+                    border-radius: 0.5rem;
+                    text-decoration: none;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    margin-bottom: 1rem;
+                    transition: background-color 0.2s;
+                }
+                .blog-erp-back-btn:hover {
+                    background-color: #e5e7eb;
+                }
                 .blog-erp-powered {
                     text-align: center;
                     margin-top: 2rem;
@@ -243,7 +262,7 @@
                     </div>
                     <div class="blog-erp-content-wrapper">
                         <h3><a href="?apiKey=${apiKey}&postId=${post.postId}">${escapeHtml(post.title)}</a></h3>
-                        <div class="blog-erp-content">${post.content}</div>
+                        <div class="blog-erp-content" style="${postId ? 'height: auto; -webkit-line-clamp: unset;' : ''}">${post.content}</div>
                         
                         <div class="blog-erp-footer">
                             <div class="blog-erp-meta">
@@ -262,10 +281,11 @@
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                                     <span>Share (${post.stats?.shares || 0})</span>
                                 </button>
+                                ${!postId ? `
                                 <a href="?apiKey=${apiKey}&postId=${post.postId}" class="blog-erp-btn blog-erp-btn-read read-btn" data-post-id="${post.postId}">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                                     Read
-                                </a>
+                                </a>` : ''}
                             </div>
                             <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af; text-align: right;">
                                 <span class="view-count" style="margin-right: 0.5rem;">${post.stats?.views || 0} Views</span>
@@ -277,7 +297,11 @@
             `).join('');
 
             container.innerHTML = `
-                <div class="blog-erp-grid">
+                ${postId ? `<a href="?apiKey=${apiKey}" class="blog-erp-back-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to all posts
+                </a>` : ''}
+                <div class="blog-erp-grid" style="${postId ? 'grid-template-columns: 1fr;' : ''}">
                     ${postsHtml}
                 </div>
                 <div class="blog-erp-powered">
