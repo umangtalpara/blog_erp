@@ -44,10 +44,18 @@ const Dashboard = () => {
     const [analyticsStats, setAnalyticsStats] = useState({});
 
     useEffect(() => {
-        fetchApiKeys();
-        fetchPosts();
-        fetchAnalytics();
-    }, []);
+        if (activeView === 'dashboard') {
+            fetchApiKeys();
+            fetchPosts();
+        } else if (activeView === 'analytics') {
+            fetchAnalytics();
+        } else if (activeView === 'posts') {
+            fetchPosts();
+            fetchPostStats();
+        } else if (activeView === 'integrations') {
+            fetchApiKeys();
+        }
+    }, [activeView]);
 
     const fetchAnalytics = async () => {
         try {
@@ -83,7 +91,6 @@ const Dashboard = () => {
             // Sort posts by createdAt desc
             const sortedPosts = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setPosts(sortedPosts);
-            fetchPostStats();
         } catch (error) {
             console.error('Error fetching posts:', error);
         } finally {
@@ -145,7 +152,6 @@ const Dashboard = () => {
                 showNotification('Post created successfully!', 'success');
             }
             resetForm();
-            fetchPosts();
             navigate('/dashboard/posts');
         } catch (error) {
             console.error('Error saving post:', error);
