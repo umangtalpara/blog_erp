@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
-import { ExternalLink, Calendar, User, ThumbsUp, Share2, MessageSquare } from 'lucide-react';
+import { ExternalLink, Calendar, User, ThumbsUp, Share2, MessageSquare, Eye } from 'lucide-react';
 import { API_URL, APP_URL } from '../config';
 
 const EmbedPosts = () => {
@@ -21,6 +21,22 @@ const EmbedPosts = () => {
             setLoading(false);
         }
     }, [apiKey, postId]);
+
+    useEffect(() => {
+        if (postId && posts.length > 0 && posts[0].postId === postId) {
+            const trackView = async () => {
+                try {
+                    await axios.post(`${API_URL}/analytics/track`, {
+                        type: 'view',
+                        data: { postId, platform: 'web-embed' }
+                    });
+                } catch (error) {
+                    console.error('Error tracking view:', error);
+                }
+            };
+            trackView();
+        }
+    }, [postId, posts]);
 
     const fetchPosts = async () => {
         try {
@@ -48,18 +64,47 @@ const EmbedPosts = () => {
     const handleLike = async (postId) => {
         if (likedPosts[postId]) return; // Already liked
 
+        // Optimistic update
+        setPosts(prevPosts => prevPosts.map(post => {
+            if (post.postId === postId) {
+                return {
+                    ...post,
+                    stats: {
+                        ...post.stats,
+                        likes: (post.stats?.likes || 0) + 1
+                    }
+                };
+            }
+            return post;
+        }));
+        setLikedPosts(prev => ({ ...prev, [postId]: true }));
+
         try {
             await axios.post(`${API_URL}/analytics/track`, {
                 type: 'like',
                 data: { postId, platform: 'web-embed' }
             });
-            setLikedPosts(prev => ({ ...prev, [postId]: true }));
         } catch (error) {
             console.error('Error liking post:', error);
+            // Revert optimistic update if needed (optional, keeping simple for now)
         }
     };
 
     const handleShare = async (postId) => {
+        // Optimistic update
+        setPosts(prevPosts => prevPosts.map(post => {
+            if (post.postId === postId) {
+                return {
+                    ...post,
+                    stats: {
+                        ...post.stats,
+                        shares: (post.stats?.shares || 0) + 1
+                    }
+                };
+            }
+            return post;
+        }));
+
         try {
             await axios.post(`${API_URL}/analytics/track`, {
                 type: 'share',
@@ -124,6 +169,16 @@ const EmbedPosts = () => {
                                 <Calendar size={14} />
                                 <span>{new Date(posts[0].createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                             </div>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                                <Eye size={14} />
+                                <span>{posts[0].stats?.views || 0} Views</span>
+                            </div>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                                <MessageSquare size={14} />
+                                <span>{posts[0].stats?.comments || 0} Comments</span>
+                            </div>
                         </div>
                         <div
                             className="prose prose-lg prose-indigo max-w-none text-gray-800 leading-relaxed mb-8"
@@ -136,14 +191,14 @@ const EmbedPosts = () => {
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${likedPosts[posts[0].postId] ? 'bg-pink-50 text-pink-600' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
                             >
                                 <ThumbsUp size={18} className={likedPosts[posts[0].postId] ? 'fill-current' : ''} />
-                                <span className="font-medium">{likedPosts[posts[0].postId] ? 'Liked' : 'Like'}</span>
+                                <span className="font-medium">{likedPosts[posts[0].postId] ? 'Liked' : 'Like'} ({posts[0].stats?.likes || 0})</span>
                             </button>
                             <button
                                 onClick={() => handleShare(posts[0].postId)}
                                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
                             >
                                 <Share2 size={18} />
-                                <span className="font-medium">Share</span>
+                                <span className="font-medium">Share ({posts[0].stats?.shares || 0})</span>
                             </button>
                         </div>
                     </div>
@@ -185,6 +240,12 @@ const EmbedPosts = () => {
                                             <span className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors" title="Author">
                                                 <User size={14} /> Author
                                             </span>
+                                            <span className="flex items-center gap-1.5" title="Views">
+                                                <Eye size={14} /> {post.stats?.views || 0}
+                                            </span>
+                                            <span className="flex items-center gap-1.5" title="Comments">
+                                                <MessageSquare size={14} /> {post.stats?.comments || 0}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="flex justify-end gap-2 pt-2 border-t border-gray-50">
@@ -193,13 +254,13 @@ const EmbedPosts = () => {
                                             className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${likedPosts[post.postId] ? 'bg-pink-50 text-pink-600' : 'text-gray-600 bg-gray-50 hover:bg-pink-50 hover:text-pink-600'}`}
                                         >
                                             <ThumbsUp size={14} className={likedPosts[post.postId] ? 'fill-current' : ''} />
-                                            {likedPosts[post.postId] ? 'Liked' : 'Like'}
+                                            {likedPosts[post.postId] ? 'Liked' : 'Like'} ({post.stats?.likes || 0})
                                         </button>
                                         <button
                                             onClick={() => handleShare(post.postId)}
                                             className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
                                         >
-                                            <Share2 size={14} /> Share
+                                            <Share2 size={14} /> Share ({post.stats?.shares || 0})
                                         </button>
                                         <a
                                             href={`?apiKey=${apiKey}&postId=${post.postId}`}

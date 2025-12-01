@@ -1,4 +1,5 @@
 const postService = require('../services/postService');
+const analyticsService = require('../services/analyticsService');
 
 const createPost = async (req, res) => {
   const { title, content, coverImage, status } = req.body;
@@ -56,6 +57,20 @@ const getPublicPosts = async (req, res) => {
   try {
     const posts = await postService.getPostsByApiKey(apiKey);
     if (!posts) return res.status(404).json({ error: 'Invalid API Key' });
+
+    // Enrich with stats if posts exist
+    if (posts.length > 0) {
+      const userId = posts[0].userId;
+      const stats = await analyticsService.getAllPostStats(userId);
+      
+      const postsWithStats = posts.map(post => ({
+        ...post,
+        stats: stats[String(post.postId)] || { views: 0, likes: 0, shares: 0, comments: 0 }
+      }));
+      
+      return res.json(postsWithStats);
+    }
+
     res.json(posts);
   } catch (error) {
     console.error(error);
@@ -85,7 +100,16 @@ const getPublicPost = async (req, res) => {
   try {
     const post = await postService.getPublicPostById(id, apiKey);
     if (!post) return res.status(404).json({ error: 'Post not found or unauthorized' });
-    res.json(post);
+
+    // Enrich with stats
+    try {
+      const stats = await analyticsService.getPostStats(post.postId, post.userId);
+      res.json({ ...post, stats });
+    } catch (statsError) {
+      console.error('Error fetching stats for public post:', statsError);
+      // Return post without stats if stats fail
+      res.json({ ...post, stats: { views: 0, likes: 0, shares: 0, comments: 0 } });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Could not fetch post' });

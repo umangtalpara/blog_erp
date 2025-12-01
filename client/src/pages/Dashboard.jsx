@@ -93,7 +93,10 @@ const Dashboard = () => {
 
     const fetchPostStats = async () => {
         try {
-            const response = await axios.get(`${API_URL}/analytics/posts`);
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_URL}/analytics/posts`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setPostStats(response.data);
         } catch (error) {
             console.error('Error fetching post stats:', error);
@@ -461,17 +464,20 @@ const Dashboard = () => {
                                                     <div className="flex items-center gap-3">
                                                         <div className={`p-2 rounded-lg ${log.type === 'share' ? 'bg-blue-50 text-blue-600' :
                                                             log.type === 'comment' ? 'bg-green-50 text-green-600' :
-                                                                'bg-purple-50 text-purple-600'
+                                                                log.type === 'like' ? 'bg-pink-50 text-pink-600' :
+                                                                    'bg-purple-50 text-purple-600'
                                                             }`}>
                                                             {log.type === 'share' ? <Share2 size={18} /> :
                                                                 log.type === 'comment' ? <MessageSquare size={18} /> :
-                                                                    <Eye size={18} />}
+                                                                    log.type === 'like' ? <ThumbsUp size={18} /> :
+                                                                        <Eye size={18} />}
                                                         </div>
                                                         <div>
                                                             <p className="font-medium text-gray-900">
                                                                 {log.type === 'share' ? 'Post Shared' :
                                                                     log.type === 'comment' ? 'New Comment' :
-                                                                        'Post Viewed'}
+                                                                        log.type === 'like' ? 'Post Liked' :
+                                                                            'Post Viewed'}
                                                             </p>
                                                             <p className="text-xs text-gray-500">
                                                                 {log.postId ? `Post ID: ${log.postId}` : 'Unknown Post'}

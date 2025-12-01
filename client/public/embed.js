@@ -239,8 +239,7 @@
                             `<img src="${post.coverImage}" alt="${escapeHtml(post.title)}">` : 
                             `<div class="blog-erp-placeholder-icon">
                                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-                            </div>`
-                        }
+                            </div>`}
                     </div>
                     <div class="blog-erp-content-wrapper">
                         <h3><a href="?apiKey=${apiKey}&postId=${post.postId}">${escapeHtml(post.title)}</a></h3>
@@ -255,18 +254,22 @@
                                 </span>
                             </div>
                             <div class="blog-erp-actions">
-                                <button class="blog-erp-btn blog-erp-btn-like like-btn" data-post-id="${post.postId}">
+                                <button class="blog-erp-btn blog-erp-btn-like like-btn" data-post-id="${post.postId}" data-likes="${post.stats?.likes || 0}">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                                    <span>Like</span>
+                                    <span>Like (${post.stats?.likes || 0})</span>
                                 </button>
-                                <button class="blog-erp-btn blog-erp-btn-share share-btn" data-post-id="${post.postId}">
+                                <button class="blog-erp-btn blog-erp-btn-share share-btn" data-post-id="${post.postId}" data-shares="${post.stats?.shares || 0}">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                                    <span>Share</span>
+                                    <span>Share (${post.stats?.shares || 0})</span>
                                 </button>
-                                <a href="?apiKey=${apiKey}&postId=${post.postId}" class="blog-erp-btn blog-erp-btn-read">
+                                <a href="?apiKey=${apiKey}&postId=${post.postId}" class="blog-erp-btn blog-erp-btn-read read-btn" data-post-id="${post.postId}">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                                     Read
                                 </a>
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af; text-align: right;">
+                                <span class="view-count" style="margin-right: 0.5rem;">${post.stats?.views || 0} Views</span>
+                                <span class="comment-count">${post.stats?.comments || 0} Comments</span>
                             </div>
                         </div>
                     </div>
@@ -290,6 +293,14 @@
                     const postId = btn.getAttribute('data-post-id');
                     if (btn.classList.contains('liked')) return;
 
+                    // Optimistic update
+                    let currentLikes = parseInt(btn.getAttribute('data-likes') || '0');
+                    const newLikes = currentLikes + 1;
+                    btn.setAttribute('data-likes', newLikes);
+                    btn.querySelector('span').textContent = `Liked (${newLikes})`;
+                    btn.classList.add('liked');
+                    btn.querySelector('svg').style.fill = 'currentColor';
+
                     try {
                         await fetch(`${API_BASE_URL}/analytics/track`, {
                             method: 'POST',
@@ -299,11 +310,9 @@
                                 data: { postId, platform: 'js-embed' }
                             })
                         });
-                        btn.classList.add('liked');
-                        btn.querySelector('span').textContent = 'Liked';
-                        btn.querySelector('svg').style.fill = 'currentColor';
                     } catch (err) {
                         console.error('Error liking post:', err);
+                        // Revert if needed
                     }
                 });
             });
@@ -311,6 +320,13 @@
             container.querySelectorAll('.share-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const postId = btn.getAttribute('data-post-id');
+                    
+                    // Optimistic update
+                    let currentShares = parseInt(btn.getAttribute('data-shares') || '0');
+                    const newShares = currentShares + 1;
+                    btn.setAttribute('data-shares', newShares);
+                    btn.querySelector('span').textContent = `Share (${newShares})`;
+
                     try {
                         await fetch(`${API_BASE_URL}/analytics/track`, {
                             method: 'POST',
@@ -332,6 +348,26 @@
                         }
                     } catch (err) {
                         console.error('Error sharing post:', err);
+                    }
+                });
+            });
+
+            container.querySelectorAll('.read-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const postId = btn.getAttribute('data-post-id');
+                    try {
+                        // Use keepalive to ensure request completes even if page unloads
+                        await fetch(`${API_BASE_URL}/analytics/track`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'view',
+                                data: { postId, platform: 'js-embed' }
+                            }),
+                            keepalive: true
+                        });
+                    } catch (err) {
+                        console.error('Error tracking view:', err);
                     }
                 });
             });

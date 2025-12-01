@@ -94,16 +94,19 @@ const getAllPostStats = async (userId) => {
 
   // Initialize stats for all user posts
   userPostIds.forEach(id => {
-    stats[id] = { views: 0, shares: 0, comments: 0, likes: 0 };
+    stats[String(id)] = { views: 0, shares: 0, comments: 0, likes: 0 };
   });
 
   logs.forEach(log => {
-    if (!log.postId || !userPostIds.includes(log.postId)) return;
+    if (!log.postId) return;
+    const logPostId = String(log.postId);
     
-    if (log.type === 'view') stats[log.postId].views++;
-    if (log.type === 'share') stats[log.postId].shares++;
-    if (log.type === 'comment') stats[log.postId].comments++;
-    if (log.type === 'like') stats[log.postId].likes++;
+    if (stats[logPostId]) {
+      if (log.type === 'view') stats[logPostId].views++;
+      if (log.type === 'share') stats[logPostId].shares++;
+      if (log.type === 'comment') stats[logPostId].comments++;
+      if (log.type === 'like') stats[logPostId].likes++;
+    }
   });
 
   return stats;
