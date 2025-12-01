@@ -21,11 +21,13 @@
             // Add basic styles
             const style = document.createElement('style');
             style.textContent = `
-                .blog-erp-post { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px; font-family: sans-serif; }
+                .blog-erp-post { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px; font-family: sans-serif; background: #fff; }
                 .blog-erp-post h3 { margin-top: 0; color: #333; }
                 .blog-erp-post a { text-decoration: none; color: inherit; }
                 .blog-erp-post a:hover { color: #4f46e5; }
                 .blog-erp-meta { font-size: 0.8em; color: #888; margin-top: 10px; }
+                .blog-erp-post img { max-width: 100%; height: auto; border-radius: 4px; }
+                .blog-erp-content { margin-top: 10px; line-height: 1.6; }
             `;
             document.head.appendChild(style);
 
@@ -52,8 +54,9 @@
 
             const html = posts.map(post => `
                 <div class="blog-erp-post">
+                    ${post.coverImage ? `<img src="${post.coverImage}" alt="${escapeHtml(post.title)}" style="width: 100%; max-height: 300px; object-fit: cover; margin-bottom: 15px;">` : ''}
                     <h3><a href="#">${escapeHtml(post.title)}</a></h3>
-                    <div>${post.content.substring(0, 150)}...</div>
+                    <div class="blog-erp-content">${post.content}</div>
                     <div class="blog-erp-meta">
                         ${new Date(post.createdAt).toLocaleDateString()}
                     </div>
