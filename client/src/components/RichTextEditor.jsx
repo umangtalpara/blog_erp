@@ -13,6 +13,7 @@ import {
     Image as ImageIcon, Video, Undo, Redo, Youtube as YoutubeIcon
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
+import { API_URL } from '../config';
 
 const VideoExtension = Node.create({
     name: 'video',

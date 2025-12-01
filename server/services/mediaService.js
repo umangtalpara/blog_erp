@@ -22,7 +22,7 @@ const generateUploadUrl = async (fileName, fileType) => {
   });
 
   const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-  const publicUrl = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+  const publicUrl = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
   return { url, key, publicUrl };
 };
 
