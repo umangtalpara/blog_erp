@@ -48,32 +48,32 @@ const CommentSection = ({ postId }) => {
     };
 
     return (
-        <div className="mt-12 pt-8 border-t border-gray-100">
-            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <MessageSquare size={20} />
+        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-100">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+                <MessageSquare size={18} className="sm:w-5 sm:h-5" />
                 Comments ({comments.length})
             </h3>
 
             {/* Comment Form */}
-            <form onSubmit={handleSubmit} className="mb-8">
-                <div className="flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                        <User size={20} className="text-gray-500" />
+            <form onSubmit={handleSubmit} className="mb-6 sm:mb-8">
+                <div className="flex gap-2 sm:gap-4">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <User size={16} className="sm:w-5 sm:h-5 text-gray-500" />
                     </div>
                     <div className="flex-1">
                         <textarea
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                             placeholder="Share your thoughts..."
-                            className="w-full p-4 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none h-24"
+                            className="w-full p-3 sm:p-4 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none h-20 sm:h-24 text-sm sm:text-base"
                         />
                         <div className="mt-2 flex justify-end">
                             <button
                                 type="submit"
                                 disabled={loading || !newComment.trim()}
-                                className="btn-primary py-2 px-6 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="btn-primary py-2 px-4 sm:px-6 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                             >
-                                <Send size={16} />
+                                <Send size={14} className="sm:w-4 sm:h-4" />
                                 {loading ? 'Posting...' : 'Post Comment'}
                             </button>
                         </div>
@@ -82,26 +82,26 @@ const CommentSection = ({ postId }) => {
             </form>
 
             {/* Comments List */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
                 {comments.length > 0 ? (
                     comments.map((comment) => (
-                        <div key={comment.eventId} className="flex gap-4 animate-fade-in">
-                            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0 text-indigo-600 font-bold">
+                        <div key={comment.eventId} className="flex gap-2 sm:gap-4 animate-fade-in">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0 text-indigo-600 font-bold text-sm sm:text-base">
                                 {comment.author ? comment.author[0].toUpperCase() : 'A'}
                             </div>
-                            <div className="flex-1">
-                                <div className="bg-gray-50 rounded-2xl p-4">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="font-bold text-gray-900">{comment.author || 'Anonymous'}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-1">
+                                        <span className="font-bold text-gray-900 text-sm sm:text-base">{comment.author || 'Anonymous'}</span>
                                         <span className="text-xs text-gray-500">{new Date(comment.timestamp).toLocaleDateString()}</span>
                                     </div>
-                                    <p className="text-gray-700">{comment.content}</p>
+                                    <p className="text-gray-700 text-sm sm:text-base break-words">{comment.content}</p>
                                 </div>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <p className="text-center text-gray-500 py-8">No comments yet. Be the first to share your thoughts!</p>
+                    <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">No comments yet. Be the first to share your thoughts!</p>
                 )}
             </div>
         </div>

@@ -60,7 +60,7 @@ const MenuButton = ({ onClick, isActive, disabled, children, title }) => (
         onClick={onClick}
         disabled={disabled}
         title={title}
-        className={`p-2 rounded-lg transition-all duration-200 flex items-center justify-center
+        className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px]
       ${isActive
                 ? 'bg-indigo-100 text-indigo-700 shadow-sm'
                 : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
@@ -144,67 +144,67 @@ const MenuBar = ({ editor }) => {
     };
 
     return (
-        <div className="border-b border-gray-200 p-2 flex flex-wrap gap-1 sticky top-0 bg-white z-10 rounded-t-lg">
-            <div className="flex gap-1 pr-2 border-r border-gray-200">
+        <div className="border-b border-gray-200 p-1.5 sm:p-2 flex flex-nowrap gap-0.5 sm:gap-1 sticky top-0 bg-white z-10 rounded-t-lg overflow-x-auto">
+            <div className="flex gap-0.5 sm:gap-1 pr-1 sm:pr-2 border-r border-gray-200">
                 <MenuButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="Bold">
-                    <Bold size={18} />
+                    <Bold size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')} title="Italic">
-                    <Italic size={18} />
+                    <Italic size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive('underline')} title="Underline">
-                    <UnderlineIcon size={18} />
+                    <UnderlineIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')} title="Strikethrough">
-                    <Strikethrough size={18} />
+                    <Strikethrough size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
             </div>
 
-            <div className="flex gap-1 px-2 border-r border-gray-200">
+            <div className="flex gap-0.5 sm:gap-1 px-1 sm:px-2 border-r border-gray-200">
                 <MenuButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} isActive={editor.isActive('heading', { level: 1 })} title="Heading 1">
-                    <Heading1 size={18} />
+                    <Heading1 size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} isActive={editor.isActive('heading', { level: 2 })} title="Heading 2">
-                    <Heading2 size={18} />
+                    <Heading2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={() => editor.chain().focus().setParagraph().run()} isActive={editor.isActive('paragraph')} title="Paragraph">
-                    <Pilcrow size={18} />
+                    <Pilcrow size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
             </div>
 
-            <div className="flex gap-1 px-2 border-r border-gray-200">
+            <div className="flex gap-0.5 sm:gap-1 px-1 sm:px-2 border-r border-gray-200">
                 <MenuButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List">
-                    <List size={18} />
+                    <List size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="Ordered List">
-                    <ListOrdered size={18} />
+                    <ListOrdered size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
             </div>
 
-            <div className="flex gap-1 px-2 border-r border-gray-200">
+            <div className="flex gap-0.5 sm:gap-1 px-1 sm:px-2 border-r border-gray-200">
                 <MenuButton onClick={addImage} title="Upload Image">
-                    <ImageIcon size={18} />
+                    <ImageIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={addVideoFile} title="Upload Video">
-                    <Video size={18} />
+                    <Video size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={addYoutubeVideo} title="Embed YouTube">
-                    <YoutubeIcon size={18} />
+                    <YoutubeIcon size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
             </div>
 
-            <div className="flex gap-1 pl-2 ml-auto">
+            <div className="flex gap-0.5 sm:gap-1 pl-1 sm:pl-2 ml-auto">
                 <MenuButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo">
-                    <Undo size={18} />
+                    <Undo size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
                 <MenuButton onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo">
-                    <Redo size={18} />
+                    <Redo size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </MenuButton>
             </div>
             {isUploading && (
-                <div className="flex items-center gap-2 px-2 border-l border-gray-200">
+                <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 border-l border-gray-200">
                     <Loader size="small" />
-                    <span className="text-xs text-gray-500 font-medium">Uploading...</span>
+                    <span className="text-xs text-gray-500 font-medium hidden sm:inline">Uploading...</span>
                 </div>
             )}
         </div>
@@ -231,7 +231,7 @@ const RichTextEditor = ({ content, onChange }) => {
         ],
         editorProps: {
             attributes: {
-                class: 'prose prose-lg prose-indigo max-w-none focus:outline-none min-h-[300px] px-6 py-4',
+                class: 'prose prose-sm sm:prose-lg prose-indigo max-w-none focus:outline-none min-h-[250px] sm:min-h-[300px] px-3 sm:px-6 py-3 sm:py-4',
             },
         },
         content,

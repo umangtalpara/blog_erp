@@ -51,10 +51,10 @@ const Auth = () => {
             </div>
 
             {/* Right Side - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 animate-fade-in">
-                <div className="w-full max-w-md space-y-8">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 animate-fade-in">
+                <div className="w-full max-w-md space-y-6 sm:space-y-8">
                     <div className="text-center">
-                        <h2 className="text-3xl font-bold text-gray-900">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
                             {isLogin ? 'Welcome back' : 'Create an account'}
                         </h2>
                         <p className="mt-2 text-sm text-gray-600">
@@ -113,7 +113,7 @@ const Auth = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full btn-primary flex justify-center py-2.5"
+                                className="w-full btn-primary flex justify-center py-2.5 text-sm sm:text-base"
                             >
                                 {loading ? (
                                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -142,21 +142,21 @@ const CreatePost = () => {
     return (
         <div className="animate-fade-in">
             <div className="max-w-4xl mx-auto">
-                <div className="mb-6 flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex-1">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex flex-wrap items-center gap-2 sm:gap-3">
                             {editingPostId ? 'Edit Post' : 'Create New Post'}
                             {!editingPostId && (
                                 <button
                                     onClick={openAiGenerateModal}
-                                    className="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full flex items-center gap-1 hover:bg-indigo-100 transition-colors"
+                                    className="text-xs sm:text-sm bg-indigo-50 text-indigo-600 px-2 sm:px-3 py-1 rounded-full flex items-center gap-1 hover:bg-indigo-100 transition-colors"
                                 >
-                                    <Sparkles size={14} />
+                                    <Sparkles size={12} className="sm:w-[14px] sm:h-[14px]" />
                                     Auto-Generate
                                 </button>
                             )}
                         </h1>
-                        <p className="text-gray-500 mt-1">{editingPostId ? 'Update your existing content.' : 'Write and publish your next big idea.'}</p>
+                        <p className="text-sm sm:text-base text-gray-500 mt-1">{editingPostId ? 'Update your existing content.' : 'Write and publish your next big idea.'}</p>
                     </div>
                     {editingPostId && (
                         <button onClick={resetForm} className="text-sm text-gray-500 hover:text-gray-700 underline">
@@ -245,20 +245,20 @@ const CreatePost = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
-                        <button type="button" onClick={() => setShowPreview(true)} className="btn-secondary flex-1">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-6 border-t border-gray-100">
+                        <button type="button" onClick={() => setShowPreview(true)} className="btn-secondary sm:flex-1 py-2.5 sm:py-2">
                             Preview
                         </button>
                         <button
                             type="button"
                             onClick={(e) => handleSavePost(e, 'draft')}
-                            className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 flex-1"
+                            className="px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 sm:flex-1"
                         >
-                            <FileText size={20} />
-                            Save Draft
+                            <FileText size={18} className="sm:w-5 sm:h-5" />
+                            <span className="text-sm sm:text-base">Save Draft</span>
                         </button>
-                        <button type="submit" className="btn-primary flex-[2] flex justify-center items-center gap-2 py-3 text-lg">
-                            <CheckCircle size={20} />
+                        <button type="submit" className="btn-primary sm:flex-[2] flex justify-center items-center gap-2 py-2.5 sm:py-3 text-base sm:text-lg">
+                            <CheckCircle size={18} className="sm:w-5 sm:h-5" />
                             {editingPostId ? 'Update Post' : 'Publish Post'}
                         </button>
                     </div>
@@ -267,29 +267,29 @@ const CreatePost = () => {
 
             {/* Preview Modal */}
             {showPreview && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-fade-in">
-                    <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
-                        <div className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-gray-100 p-4 flex justify-between items-center z-10">
-                            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-[60] animate-fade-in">
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl relative">
+                        <div className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-gray-100 p-3 sm:p-4 flex justify-between items-center z-10">
+                            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
                                 <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                                 Preview Mode
                             </h3>
-                            <button onClick={() => setShowPreview(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                <X size={20} className="text-gray-500" />
+                            <button onClick={() => setShowPreview(false)} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X size={18} className="sm:w-5 sm:h-5 text-gray-500" />
                             </button>
                         </div>
-                        <div className="p-8 md:p-12">
-                            <article className="prose prose-lg prose-indigo mx-auto">
-                                {coverImage && <img src={coverImage} alt={title} className="w-full h-[400px] object-cover rounded-2xl shadow-lg mb-8" />}
-                                <h1 className="font-heading text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">{title || 'Untitled Post'}</h1>
-                                <div className="flex items-center gap-3 text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+                        <div className="p-4 sm:p-8 md:p-12">
+                            <article className="prose prose-sm sm:prose-lg prose-indigo mx-auto">
+                                {coverImage && <img src={coverImage} alt={title} className="w-full h-[200px] sm:h-[300px] md:h-[400px] object-cover rounded-xl sm:rounded-2xl shadow-lg mb-6 sm:mb-8" />}
+                                <h1 className="font-heading text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">{title || 'Untitled Post'}</h1>
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-100">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                            <User size={14} />
+                                        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                            <User size={12} className="sm:w-[14px] sm:h-[14px]" />
                                         </div>
                                         <span>By You</span>
                                     </div>
-                                    <span>•</span>
+                                    <span className="hidden sm:inline">•</span>
                                     <span>{new Date().toLocaleDateString()}</span>
                                 </div>
                                 <div dangerouslySetInnerHTML={{ __html: content || '<p class="text-gray-400 italic">Start writing your content...</p>' }} />
@@ -304,28 +304,30 @@ const CreatePost = () => {
 
             {/* AI Modal */}
             {showAiModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[80] animate-fade-in">
-                    <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl relative overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-indigo-50/50">
-                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-[80] animate-fade-in">
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl relative overflow-hidden">
+                        <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-indigo-50/50">
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
                                 {aiMode === 'generate' ? (
                                     <>
-                                        <Sparkles className="text-indigo-600" size={20} />
-                                        Auto-Generate Post
+                                        <Sparkles className="text-indigo-600" size={18} className="sm:w-5 sm:h-5" />
+                                        <span className="hidden sm:inline">Auto-Generate Post</span>
+                                        <span className="sm:hidden">Generate</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Wand2 className="text-indigo-600" size={20} />
-                                        Improve Content
+                                        <Wand2 className="text-indigo-600" size={18} className="sm:w-5 sm:h-5" />
+                                        <span className="hidden sm:inline">Improve Content</span>
+                                        <span className="sm:hidden">Improve</span>
                                     </>
                                 )}
                             </h3>
-                            <button onClick={() => setShowAiModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                <X size={20} className="text-gray-500" />
+                            <button onClick={() => setShowAiModal(false)} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                <X size={18} className="sm:w-5 sm:h-5 text-gray-500" />
                             </button>
                         </div>
-                        <div className="p-6">
-                            <p className="text-gray-600 mb-4 text-sm">
+                        <div className="p-4 sm:p-6">
+                            <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm">
                                 {aiMode === 'generate'
                                     ? "Enter a topic or title, and our AI will generate a complete blog post for you."
                                     : "Describe how you want to improve the content (e.g., 'make it funnier', 'fix grammar', 'expand on the second paragraph')."}
@@ -334,13 +336,13 @@ const CreatePost = () => {
                                 value={aiPrompt}
                                 onChange={(e) => setAiPrompt(e.target.value)}
                                 placeholder={aiMode === 'generate' ? "E.g., The Future of Artificial Intelligence in Healthcare" : "E.g., Make the tone more professional and fix any typos."}
-                                className="w-full h-32 p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
+                                className="w-full h-28 sm:h-32 p-3 sm:p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm sm:text-base text-gray-900 placeholder-gray-400"
                                 autoFocus
                             />
-                            <div className="flex justify-end gap-3 mt-6">
+                            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 mt-4 sm:mt-6">
                                 <button
                                     onClick={() => setShowAiModal(false)}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg font-medium transition-colors text-sm sm:text-base"
                                     disabled={isAiLoading}
                                 >
                                     Cancel
@@ -348,16 +350,16 @@ const CreatePost = () => {
                                 <button
                                     onClick={handleAiSubmit}
                                     disabled={isAiLoading || !aiPrompt.trim()}
-                                    className="btn-primary flex items-center gap-2 px-6"
+                                    className="btn-primary flex items-center justify-center gap-2 px-4 sm:px-6 py-2 text-sm sm:text-base"
                                 >
                                     {isAiLoading ? (
                                         <>
-                                            <LoaderIcon className="animate-spin" size={18} />
+                                            <LoaderIcon className="animate-spin" size={16} className="sm:w-[18px] sm:h-[18px]" />
                                             Processing...
                                         </>
                                     ) : (
                                         <>
-                                            {aiMode === 'generate' ? <Sparkles size={18} /> : <Wand2 size={18} />}
+                                            {aiMode === 'generate' ? <Sparkles size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Wand2 size={16} className="sm:w-[18px] sm:h-[18px]" />}
                                             {aiMode === 'generate' ? 'Generate' : 'Improve'}
                                         </>
                                     )}
