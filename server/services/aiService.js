@@ -5,15 +5,26 @@ let model;
 
 if (process.env.GEMINI_API_KEY) {
   genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-2.0-flash" });
 } else {
   console.warn('GEMINI_API_KEY is not set. AI features will not work.');
 }
 
-const generatePostContent = async (topic) => {
-  if (!model) throw new Error('Gemini API Key is missing');
+const parseAIResponse = (text) => {
+  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
   try {
-    const prompt = `You are a professional blog post writer. Generate a catchy title and engaging content (in HTML format) for a blog post about: "${topic}". 
+    return JSON.parse(cleanText);
+  } catch {
+    throw Object.assign(new Error('AI returned an invalid response. Please try again.'), { code: 'INVALID_AI_RESPONSE' });
+  }
+};
+
+const generatePostContent = async (topic) => {
+  if (!model) {
+    throw Object.assign(new Error('AI service is not configured. Please contact the administrator.'), { code: 'AI_NOT_CONFIGURED' });
+  }
+
+  const prompt = `You are a professional blog post writer. Generate a catchy title and engaging content (in HTML format) for a blog post about: "${topic}". 
     
     Return the response strictly as a valid JSON object with the following structure:
     {
@@ -22,24 +33,23 @@ const generatePostContent = async (topic) => {
     }
     Do not include markdown formatting like \`\`\`json or \`\`\`. Just the raw JSON string.`;
 
+  try {
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
-    // Clean up potential markdown formatting if Gemini adds it despite instructions
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    return JSON.parse(cleanText);
+    const text = result.response.text();
+    return parseAIResponse(text);
   } catch (error) {
-    console.error('Error generating post content:', error);
-    throw new Error('Failed to generate content');
+    if (error.code === 'INVALID_AI_RESPONSE' || error.code === 'AI_NOT_CONFIGURED') throw error;
+    console.error('Gemini API error (generatePost):', error.message);
+    throw Object.assign(new Error('Failed to generate content. The AI service may be temporarily unavailable.'), { code: 'AI_API_ERROR' });
   }
 };
 
 const improvePostContent = async (currentContent, instructions) => {
-  if (!model) throw new Error('Gemini API Key is missing');
-  try {
-    const prompt = `You are a professional editor. Improve the following blog post content based on these instructions: "${instructions}".
+  if (!model) {
+    throw Object.assign(new Error('AI service is not configured. Please contact the administrator.'), { code: 'AI_NOT_CONFIGURED' });
+  }
+
+  const prompt = `You are a professional editor. Improve the following blog post content based on these instructions: "${instructions}".
     
     Current Content:
     ${currentContent}
@@ -50,18 +60,15 @@ const improvePostContent = async (currentContent, instructions) => {
     }
     Do not include markdown formatting like \`\`\`json or \`\`\`. Just the raw JSON string.`;
 
+  try {
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // Clean up potential markdown formatting
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    const jsonResponse = JSON.parse(cleanText);
-    return jsonResponse.content;
+    const text = result.response.text();
+    const parsed = parseAIResponse(text);
+    return parsed.content;
   } catch (error) {
-    console.error('Error improving post content:', error);
-    throw new Error('Failed to improve content');
+    if (error.code === 'INVALID_AI_RESPONSE' || error.code === 'AI_NOT_CONFIGURED') throw error;
+    console.error('Gemini API error (improvePost):', error.message);
+    throw Object.assign(new Error('Failed to improve content. The AI service may be temporarily unavailable.'), { code: 'AI_API_ERROR' });
   }
 };
 
