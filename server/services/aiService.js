@@ -39,8 +39,16 @@ const generatePostContent = async (topic) => {
     return parseAIResponse(text);
   } catch (error) {
     if (error.code === 'INVALID_AI_RESPONSE' || error.code === 'AI_NOT_CONFIGURED') throw error;
-    console.error('Gemini API error (generatePost):', error.message);
-    throw Object.assign(new Error('Failed to generate content. The AI service may be temporarily unavailable.'), { code: 'AI_API_ERROR' });
+    console.error('Gemini API error (generatePost):', {
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText,
+      errorDetails: error.errorDetails || error.cause || null,
+    });
+    throw Object.assign(
+      new Error(`Failed to generate content: ${error.message}`),
+      { code: 'AI_API_ERROR' }
+    );
   }
 };
 
@@ -67,7 +75,12 @@ const improvePostContent = async (currentContent, instructions) => {
     return parsed.content;
   } catch (error) {
     if (error.code === 'INVALID_AI_RESPONSE' || error.code === 'AI_NOT_CONFIGURED') throw error;
-    console.error('Gemini API error (improvePost):', error.message);
+    console.error('Gemini API error (improvePost):', {
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText,
+      errorDetails: error.errorDetails || error.cause || null,
+    });
     throw Object.assign(new Error('Failed to improve content. The AI service may be temporarily unavailable.'), { code: 'AI_API_ERROR' });
   }
 };
