@@ -39,16 +39,11 @@ const generatePostContent = async (topic) => {
     return parseAIResponse(text);
   } catch (error) {
     if (error.code === 'INVALID_AI_RESPONSE' || error.code === 'AI_NOT_CONFIGURED') throw error;
-    console.error('Gemini API error (generatePost):', {
-      message: error.message,
-      status: error.status,
-      statusText: error.statusText,
-      errorDetails: error.errorDetails || error.cause || null,
-    });
-    throw Object.assign(
-      new Error(`Failed to generate content: ${error.message}`),
-      { code: 'AI_API_ERROR' }
-    );
+    if (error.status === 429 || error.message?.includes('429')) {
+      throw Object.assign(new Error('AI quota exceeded. The free tier limit has been reached. Please try again later or contact the administrator.'), { code: 'AI_QUOTA_EXCEEDED' });
+    }
+    console.error('Gemini API error (generatePost):', { message: error.message, status: error.status });
+    throw Object.assign(new Error(`Failed to generate content: ${error.message}`), { code: 'AI_API_ERROR' });
   }
 };
 
@@ -75,12 +70,10 @@ const improvePostContent = async (currentContent, instructions) => {
     return parsed.content;
   } catch (error) {
     if (error.code === 'INVALID_AI_RESPONSE' || error.code === 'AI_NOT_CONFIGURED') throw error;
-    console.error('Gemini API error (improvePost):', {
-      message: error.message,
-      status: error.status,
-      statusText: error.statusText,
-      errorDetails: error.errorDetails || error.cause || null,
-    });
+    if (error.status === 429 || error.message?.includes('429')) {
+      throw Object.assign(new Error('AI quota exceeded. The free tier limit has been reached. Please try again later or contact the administrator.'), { code: 'AI_QUOTA_EXCEEDED' });
+    }
+    console.error('Gemini API error (improvePost):', { message: error.message, status: error.status });
     throw Object.assign(new Error('Failed to improve content. The AI service may be temporarily unavailable.'), { code: 'AI_API_ERROR' });
   }
 };

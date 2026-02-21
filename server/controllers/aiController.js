@@ -5,6 +5,7 @@ const AI_ERROR_STATUS = {
   AI_NOT_CONFIGURED: 503,
   INVALID_AI_RESPONSE: 502,
   AI_API_ERROR: 502,
+  AI_QUOTA_EXCEEDED: 429,
 };
 
 const handleAIError = (error, res, fallbackMessage) => {
