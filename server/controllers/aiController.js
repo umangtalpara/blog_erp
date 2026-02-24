@@ -48,4 +48,13 @@ const improvePost = async (req, res) => {
   }
 };
 
-module.exports = { generatePost, improvePost };
+const testConnection = async (req, res) => {
+  try {
+    const result = await aiService.testConnection();
+    return res.status(200).json(result);
+  } catch (error) {
+    return handleAIError(error, res, 'AI connection test failed.');
+  }
+};
+
+module.exports = { generatePost, improvePost, testConnection };
